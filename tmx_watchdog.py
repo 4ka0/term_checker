@@ -1,7 +1,7 @@
 '''
 Script to monitor translation archive for the addition of new tmx files.
-If a new tmx is added to the archive, the file is converted to a txt file
-and the txt file is added to the glossary reader folder.
+If a new tmx is added to a translation archive folder, the file is converted
+to a txt file and saved in a glossary folder.
 '''
 
 import sys
@@ -20,9 +20,7 @@ class EventHandler(FileSystemEventHandler):
     Event handler looking specifically for new files.
     '''
     def on_created(self, event):
-        print('\nFile added.')
         new_file = event.src_path
-        print('New file = ' + new_file)
         if new_file.endswith('.tmx'):
             convert_tmx(new_file)
 
@@ -47,6 +45,7 @@ def convert_tmx(new_file):
     source_lang = header.get('srclang')
     seg_pairs = [] 
 
+    # Parsing the tmx file.
     for tu in root.iter("tu"):
         target_lang = ''
         source_text = ''
