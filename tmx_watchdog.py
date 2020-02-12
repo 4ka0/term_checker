@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 '''
 Script to monitor translation archive for the addition of new tmx files.
 If a new tmx is added to a translation archive folder, the file is converted
