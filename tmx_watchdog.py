@@ -5,6 +5,10 @@
 Script to monitor translation archive for the addition of new tmx files.
 If a new tmx is added to a translation archive folder, the file is converted
 to a txt file and saved in a glossary folder.
+
+Features:
+    Implementation of a folder observer and event handler
+    Conversion of tmx file to txt file
 '''
 
 import sys

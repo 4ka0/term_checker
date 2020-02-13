@@ -2,14 +2,20 @@
 # -*- coding: utf-8 -*-
 
 '''
-Script to check that project-specific terminology is being used 
-in a Japanese to English Eng translation tmx file.
+Script to check whether project-specific terminology is being used 
+in a Japanese to English translation (tmx file).
 
-The terminology is in a tab-delimited text file with the following format:
-Japanese<tab>English
+Terminology is listed in a tab-delimited file (txt file) with
+the following format: Japanese<tab>English.
+
+Features:
+	Obtaining command line arguments
+	Reading txt file
+	Parsing tmx file
+	String comparisons
 
 To execute:
-python3 terminology_check.py tmxfile txtfile
+	python3 terminology_check.py tmxfile txtfile
 '''
 
 import sys

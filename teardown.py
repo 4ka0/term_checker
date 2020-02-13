@@ -3,14 +3,15 @@
 
 '''
 Script to teardown a completed translation project.
-Tasks carried out include:
-    Saving project master glossary local archive, desktop, and dropbox.
+
+Features:
+    Copying files to several locations
+    Renaming files
+    Converting tmx files to txt
+    Deleting and zipping folders
 
 To execute:
-python3 teardown.py project_folder
-
-Typical project folder path:
-/Volumes/Untitled/mac_local_jobs/projects/chizai/project_folder
+    python3 teardown.py project_folder
 '''
 
 import os
