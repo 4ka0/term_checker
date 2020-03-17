@@ -83,6 +83,12 @@ def get_translation(translation_file):
     '''
     Function for extracting translation from user-specified tmx file.
     '''
+
+    '''
+    NEXT
+    Save segment pairs as a Segment object as per gather.py
+    '''
+
     translation = []
 
     root = tree.getroot()
