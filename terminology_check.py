@@ -30,7 +30,7 @@ def user_input_check(user_input):
         python3 terminology_check.py glossary.txt translation.tmx
     Aspects checked:
         3 arguments should have been entered
-        1st argument should be a python script
+        (1st argument is the name of this script)
         2nd argument should be a txt file (glossary)
         3rd argument should be a tmx file (translation)
     '''
