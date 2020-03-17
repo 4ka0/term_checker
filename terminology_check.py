@@ -64,94 +64,97 @@ def user_input_check(user_input):
 def get_terminology(glossary_file):
     '''
     Function for extracting terminology from user-specified txt file.
+    Entries are stored as single tab-delimited string and added to
+    a list called 'terminology'.
     '''
-    
-    terminology = []
-
-    # Read in terminology data file
-    with open(glossary_file) as f:
-        terminology = f.readlines()
-        # Remove possible '*' chars from the start of each line
-        terminology = [line.lstrip('*') for line in terminology]
-        # Remove whitespace chars such as '\n' from the end of each line
-        terminology = [line.rstrip() for line in terminology]
-
-    return terminology
+    try:
+        # Read in terminology data file
+        with open(glossary_file) as f:
+            terminology = f.readlines()
+            # Remove possible '*' chars from the start of each line
+            terminology = [line.lstrip('*') for line in terminology]
+            # Remove whitespace chars such as '\n' from the end of each line
+            terminology = [line.rstrip() for line in terminology]
+    except FileNotFoundError as fnf_error:
+        print(fnf_error)
+    else:
+        return terminology
 
 
 def get_translation(translation_file):
     '''
     Function for extracting translation from user-specified tmx file.
+    Sentence pairs are stored as single tab-delimited string and added to
+    a list called 'translation'.
     '''
+    try:
+        with open(translation_file, 'rb') as tmx_file:
+            tree = ET.parse(tmx_file)
+    except FileNotFoundError as fnf_error:
+        print(fnf_error)
+    else:
+        root = tree.getroot()
+        header = root.find('./header')
+        source_lang = header.get('srclang')
+        translation = []
 
-    '''
-    NEXT
-    Save segment pairs as a Segment object as per gather.py
-    '''
+        # Look at each 'tu' node
+        for tu in root.iter('tu'):
 
-    translation = []
+            target_lang = ''
+            source_text = ''
+            target_text = ''
 
-    root = tree.getroot()
-    header = root.find('./header')
-    source_lang = header.get('srclang')
-    segments = []
-
-    # Look at each 'tu' node
-    for tu in root.iter('tu'):
-
-        target_lang = ''
-        source_text = ''
-        target_text = ''
-
-        # Any children present? Should be 2 'tuv' nodes
-        if len(tu) > 0:
-
-            for child in tu:
-
-                # Only look at 'tuv' children
-                if child.tag == 'tuv':
-
-                    # Get language
-                    lang = child.get('lang')
-
-                    # Set target language if appropriate
-                    if lang != source_lang:
-                        target_lang = lang
-
-                    # Any children present? Should be 1 'seg' node
-                    if len(child) > 0:
-
-                        for subchild in child:
-
-                            # Only look at 'seg' child nodes
-                            if subchild.tag == 'seg':
-
-                                '''
-                                Source or target text?
-                                Check if text exists.
-                                If not, assign empty string
-                                to avoid 'None' being assigned.
-                                '''
-                                if target_lang == '':
-                                    if subchild.text:
-                                        source_text = subchild.text
+            # Any children present? Should be 2 'tuv' nodes
+            if len(tu) > 0:
+                for child in tu:
+                    # Only look at 'tuv' children
+                    if child.tag == 'tuv':
+                        # Get language
+                        lang = child.get('lang')
+                        # Set target language if appropriate
+                        if lang != source_lang:
+                            target_lang = lang
+                        # Any children present? Should be 1 'seg' node
+                        if len(child) > 0:
+                            for subchild in child:
+                                # Only look at 'seg' child nodes
+                                if subchild.tag == 'seg':
+                                    '''
+                                    Source or target text?
+                                    Check if text exists.
+                                    If not, assign empty string
+                                    to avoid 'None' being assigned.
+                                    '''
+                                    if target_lang == '':
+                                        if subchild.text:
+                                            source_text = subchild.text
+                                        else:
+                                            source_text = ''
                                     else:
-                                        source_text = ''
-                                else:
-                                    if subchild.text:
-                                        target_text = subchild.text
-                                    else:
-                                        target_text = ''
-
-
-    
-    return translation
+                                        if subchild.text:
+                                            target_text = subchild.text
+                                        else:
+                                            target_text = ''
+            
+            translation.append(source_text + '\t' + target_text)
+   
+        return translation
 
 
 def check_translation(terminology, translation):
     '''
     Function for checking terminology against the translation.
     '''
+
+    print('\n')
+    for entry in terminology:
+        print(entry)
+
+    print('\n')
+    for entry in translation:
+        print(entry)
+
     results = []
     '''
     Parse through tmx file segment by segment
