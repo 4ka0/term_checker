@@ -9,13 +9,13 @@ Terminology is listed in a tab-delimited file (txt file) with
 the following format: Japanese<tab>English.
 
 Features:
-	Obtaining command line arguments
-	Reading txt file
-	Parsing tmx file
-	String comparisons
+    Obtaining command line arguments
+    Reading txt file
+    Parsing tmx file
+    String comparisons
 
 To execute:
-	python3 terminology_check.py glossary.txt translation.tmx
+    python3 terminology_check.py glossary.txt translation.tmx
 '''
 
 
@@ -27,7 +27,7 @@ def user_input_check(user_input):
     '''
     Function for validating user input entered at the command line.
     Expected input:
-    	python3 terminology_check.py glossary.txt translation.tmx
+        python3 terminology_check.py glossary.txt translation.tmx
     Aspects checked:
         3 arguments should have been entered
         1st argument should be a python script
@@ -55,71 +55,126 @@ def user_input_check(user_input):
     # Error message   
     if not input_verified:
         print(' Incorrect input.\n'
-        	  ' Please try again using the following format.\n'
-        	  ' python3 terminology_check.py glossary.txt translation.tmx')
+              ' Please try again using the following format.\n'
+              ' python3 terminology_check.py glossary.txt translation.tmx')
 
     return input_verified
 
 
-def get_terminology():
-	'''
-	Function for extracting terminology from user-specified txt file.
-	'''
-	
-	terminology = []
+def get_terminology(glossary_file):
+    '''
+    Function for extracting terminology from user-specified txt file.
+    '''
+    
+    terminology = []
 
-	# Get data from file, populate list
-	# line by line or all at once?
+    # Read in terminology data file
+    with open(glossary_file) as f:
+        terminology = f.readlines()
+        # Remove possible '*' chars from the start of each line
+        terminology = [line.lstrip('*') for line in terminology]
+        # Remove whitespace chars such as '\n' from the end of each line
+        terminology = [line.rstrip() for line in terminology]
 
-	with open(filename) as f:
-    	content = f.readlines()
-		# Remove whitespace characters such as \n at the end of each line
-		content = [line.rstrip() for line in content]
-
-	return terminology
-
-
-def get_translation():
-	'''
-	Function for extracting translation from user-specified tmx file.
-	'''
-	translation = []
-	return translation
+    return terminology
 
 
-def check_translation():
-	'''
-	Function for checking terminology against the translation.
-	'''
-	results = []
-	'''
-	Parse through tmx file segment by segment
-		In each segment, check if Jap text contains word in Jap list
-			If yes, count number of instances in Jap text
-					check corresponding Eng word is in Eng text at 
-					the same number of instances
-						If yes, no problem
-						If not, report error
-			If not, no problem
-	'''
-	return results
+def get_translation(translation_file):
+    '''
+    Function for extracting translation from user-specified tmx file.
+    '''
+    translation = []
+
+    root = tree.getroot()
+    header = root.find('./header')
+    source_lang = header.get('srclang')
+    segments = []
+
+    # Look at each 'tu' node
+    for tu in root.iter('tu'):
+
+        target_lang = ''
+        source_text = ''
+        target_text = ''
+
+        # Any children present? Should be 2 'tuv' nodes
+        if len(tu) > 0:
+
+            for child in tu:
+
+                # Only look at 'tuv' children
+                if child.tag == 'tuv':
+
+                    # Get language
+                    lang = child.get('lang')
+
+                    # Set target language if appropriate
+                    if lang != source_lang:
+                        target_lang = lang
+
+                    # Any children present? Should be 1 'seg' node
+                    if len(child) > 0:
+
+                        for subchild in child:
+
+                            # Only look at 'seg' child nodes
+                            if subchild.tag == 'seg':
+
+                                '''
+                                Source or target text?
+                                Check if text exists.
+                                If not, assign empty string
+                                to avoid 'None' being assigned.
+                                '''
+                                if target_lang == '':
+                                    if subchild.text:
+                                        source_text = subchild.text
+                                    else:
+                                        source_text = ''
+                                else:
+                                    if subchild.text:
+                                        target_text = subchild.text
+                                    else:
+                                        target_text = ''
 
 
-def output_results():
-	'''
-	Function for outputting results to the terminal.
-	'''
-	pass
+    
+    return translation
+
+
+def check_translation(terminology, translation):
+    '''
+    Function for checking terminology against the translation.
+    '''
+    results = []
+    '''
+    Parse through tmx file segment by segment
+        In each segment, check if Jap text contains word in Jap list
+            If yes, count number of instances in Jap text
+                    check corresponding Eng word is in Eng text at 
+                    the same number of instances
+                        If yes, no problem
+                        If not, report error
+            If not, no problem
+    '''
+    return results
+
+
+def output_results(results):
+    '''
+    Function for outputting results to the terminal.
+    '''
+    pass
 
 
 def main():
-	user_input = sys.argv
-	if user_input_check(user_input):
-		terminology = get_terminology(user_input[3])
-		translation = get_translation(user_input[2])
-		results = check_translation(terminology, translation)
-		output_results(results)
-		
-		
+    user_input = sys.argv
+    if user_input_check(user_input):
+        terminology = get_terminology(user_input[1])
+        translation = get_translation(user_input[2])
+        results = check_translation(terminology, translation)
+        output_results(results)
+        
+        
 if __name__ == "__main__":
     main()
