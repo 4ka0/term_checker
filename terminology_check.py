@@ -23,6 +23,16 @@ import sys
 import xml.etree.ElementTree as ET
 
 
+class Segment():
+    '''
+    Used to create objects for each source-target segment extracted
+    from a tmx file.
+    '''
+    def __init__(self, source_text, target_text):
+        self.source_text = source_text
+        self.target_text = target_text
+
+
 def user_input_check(user_input):
     '''
     Function for validating user input entered at the command line.
@@ -68,7 +78,6 @@ def get_terminology(glossary_file):
     a list called 'terminology'.
     '''
     try:
-        # Read in terminology data file
         with open(glossary_file) as f:
             terminology = f.readlines()
             # Remove possible '*' chars from the start of each line
@@ -137,7 +146,8 @@ def get_translation(translation_file):
                                         else:
                                             target_text = ''
             
-            translation.append(source_text + '\t' + target_text)
+            segment = Segment(source_text, target_text)
+            translation.append(segment)
    
         return translation
 
@@ -146,14 +156,6 @@ def check_translation(terminology, translation):
     '''
     Function for checking terminology against the translation.
     '''
-
-    print('\n')
-    for entry in terminology:
-        print(entry)
-
-    print('\n')
-    for entry in translation:
-        print(entry)
 
     results = []
     '''
@@ -166,6 +168,17 @@ def check_translation(terminology, translation):
                         If not, report error
             If not, no problem
     '''
+
+    for segment in translation:
+        # Only proceed if there is source and target text.
+        if segment.source_text and segment.target_text:
+            if not segment.source_text.isspace() and not segment.target_text.isspace():
+                # Check if any terminology is in the text
+                
+
+        
+
+
     return results
 
 
