@@ -155,30 +155,37 @@ def get_translation(translation_file):
 def check_translation(terminology, translation):
     '''
     Function for checking terminology against the translation.
+    The check made is case-insensitive.
     '''
-
-    results = []
-    '''
-    Parse through tmx file segment by segment
-        In each segment, check if Jap text contains word in Jap list
-            If yes, count number of instances in Jap text
-                    check corresponding Eng word is in Eng text at 
-                    the same number of instances
-                        If yes, no problem
-                        If not, report error
-            If not, no problem
-    '''
-
+    
     for segment in translation:
-        # Only proceed if there is source and target text.
+
+        # Only proceed if there is actual source and target text.
         if segment.source_text and segment.target_text:
             if not segment.source_text.isspace() and not segment.target_text.isspace():
-                # Check if any terminology is in the text
-                
-
         
+                # Check if any source terminology is in the source text
 
+                for entry in terminology:
+                    
+                    both_terms = entry.split('\t')
+                    source_term = both_terms[0].lower()
+                    target_term = both_terms[1].lower()
 
+                    source_instances = segment.source_text.lower().count(source_term)
+                    target_instances = segment.target_text.lower().count(target_term)
+
+                    if source_instances > 0:
+                        if target_instances < source_instances:
+
+                            # Error found
+                            print('\n' + segment.source_text)
+                            print(segment.target_text)
+                            print(str(both_terms))
+                            print(source_term + ' = ' + str(source_instances))
+                            print(target_term + ' = ' + str(target_instances))
+
+    results = []
     return results
 
 
