@@ -3,10 +3,10 @@
 
 '''
 Script to check whether project-specific terminology is being used 
-in a Japanese to English translation (tmx file).
+in a translation (tmx file).
 
 Terminology is listed in a tab-delimited file (txt file) with
-the following format: Japanese<tab>English.
+the following format: Source<tab>Target
 
 Features:
     Obtaining command line arguments
@@ -81,7 +81,7 @@ def get_terminology(glossary_file):
     try:
         with open(glossary_file) as f:
             terminology = f.readlines()
-            # Remove surrounding whitespace chars from each line
+            # Remove surrounding whitespace chars from each line including '\n'
             terminology = [line.strip() for line in terminology]
             # Remove possible '*' chars from the start of each line
             # (I have these in some of my client glossaries)
@@ -95,17 +95,14 @@ def get_terminology(glossary_file):
 def get_translation(translation_file):
     '''
     Function for extracting translation from user-specified tmx file.
-    Sentence pairs are stored as single tab-delimited string and added to
-    a list called 'translation'.
     '''
     try:
         with open(translation_file, 'rb') as file:
-            # tree = ET.parse(file)
             tmx_file = tmxfile(file)
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     else:
-        translation = []
+        translation = []  # List of Segment objects
 
         for node in tmx_file.unit_iter():
             source_text = node.getsource()
@@ -119,7 +116,6 @@ def get_translation(translation_file):
 def check_translation(terminology, translation):
     '''
     Function for checking terminology against the translation.
-    The check made is case-insensitive.
     '''
     
     for segment in translation:
