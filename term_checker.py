@@ -21,7 +21,6 @@ To execute:
 
 import sys
 from translate.storage.tmx import tmxfile
-# import xml.etree.ElementTree as ET
 
 
 class Segment():
@@ -85,7 +84,7 @@ def get_terminology(glossary_file):
             # Remove surrounding whitespace chars from each line
             terminology = [line.strip() for line in terminology]
             # Remove possible '*' chars from the start of each line
-            # I have these in some of my client glossaries
+            # (I have these in some of my client glossaries)
             terminology = [line.lstrip('*') for line in terminology]
     except FileNotFoundError as fnf_error:
         print(fnf_error)
@@ -107,48 +106,6 @@ def get_translation(translation_file):
         print(fnf_error)
     else:
         translation = []
-
-        '''
-        root = tree.getroot()
-        header = root.find('./header')
-        source_lang = header.get('srclang')
-
-        # Look at each 'tu' node
-        for tu in root.iter('tu'):
-
-            target_lang = ''
-            source_text = ''
-            target_text = ''
-
-            # Any children present? Should be 2 'tuv' nodes
-            if len(tu) > 0:
-                for child in tu:
-                    # Only look at 'tuv' children
-                    if child.tag == 'tuv':
-                        # Get language
-                        lang = child.get('lang')
-                        # Set target language if appropriate
-                        if lang != source_lang:
-                            target_lang = lang
-                        # Any children present? Should be 1 'seg' node
-                        if len(child) > 0:
-                            for subchild in child:
-                                # Only look at 'seg' child nodes
-                                if subchild.tag == 'seg':
-                                    if target_lang == '':
-                                        if subchild.text:
-                                            source_text = subchild.text
-                                        else:
-                                            source_text = ''
-                                    else:
-                                        if subchild.text:
-                                            target_text = subchild.text
-                                        else:
-                                            target_text = ''
-            
-            segment = Segment(source_text, target_text, {})
-            translation.append(segment)
-        '''
 
         for node in tmx_file.unit_iter():
             source_text = node.getsource()
