@@ -5,17 +5,11 @@
 Script to check whether project-specific terminology is being used 
 in a translation (tmx file).
 
-Terminology is listed in a tab-delimited file (txt file) with
-the following format: Source<tab>Target
-
-Features:
-    Obtaining command line arguments
-    Reading txt file
-    Parsing tmx file
-    String comparisons
+Terminology is assumed to be listed in a tab-delimited file (txt file)
+with the following format: Source<tab>Target
 
 To execute:
-    python3 terminology_check.py glossary.txt translation.tmx
+python3 term_checker.py glossary.txt translation.tmx
 '''
 
 
@@ -144,9 +138,9 @@ def check_translation(terminology, translation):
                     source_instances = source_text.count(source_term)
                     target_instances = target_text.count(target_term)
 
-                    # Error condition:
-                    # if the target terms appears less times than source term
                     if source_instances > 0:
+                        # Error condition: if the target terms appears
+                        # less times than the source term
                         if target_instances < source_instances:
 
                             # Error found: add as missing term
