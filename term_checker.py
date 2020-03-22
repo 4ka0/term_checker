@@ -28,9 +28,10 @@ class Segment():
     Used to create objects for each source-target segment extracted
     from a tmx file.
     '''
-    def __init__(self, source_text, target_text):
+    def __init__(self, source_text, target_text, missing_terms):
         self.source_text = source_text
         self.target_text = target_text
+        self.missing_terms = missing_terms
 
 
 def user_input_check(user_input):
@@ -80,10 +81,11 @@ def get_terminology(glossary_file):
     try:
         with open(glossary_file) as f:
             terminology = f.readlines()
+            # Remove surrounding whitespace chars from each line
+            terminology = [line.strip() for line in terminology]
             # Remove possible '*' chars from the start of each line
+            # I have these in some of my client glossaries
             terminology = [line.lstrip('*') for line in terminology]
-            # Remove whitespace chars such as '\n' from the end of each line
-            terminology = [line.rstrip() for line in terminology]
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     else:
@@ -146,7 +148,7 @@ def get_translation(translation_file):
                                         else:
                                             target_text = ''
             
-            segment = Segment(source_text, target_text)
+            segment = Segment(source_text, target_text, {})
             translation.append(segment)
    
         return translation
@@ -162,38 +164,51 @@ def check_translation(terminology, translation):
 
         # Only proceed if there is actual source and target text.
         if segment.source_text and segment.target_text:
-            if not segment.source_text.isspace() and not segment.target_text.isspace():
+            if (not segment.source_text.isspace() and 
+                not segment.target_text.isspace()):
         
                 # Check if any source terminology is in the source text
-
                 for entry in terminology:
                     
+                    # Extract source and target terms
                     both_terms = entry.split('\t')
-                    source_term = both_terms[0].lower()
-                    target_term = both_terms[1].lower()
+                    if len(both_terms) == 2:
+                        source_term = both_terms[0]
+                        target_term = both_terms[1]
 
-                    source_instances = segment.source_text.lower().count(source_term)
-                    target_instances = segment.target_text.lower().count(target_term)
+                    # Convert all to lower case for case-insensitive comparison
+                    source_term = source_term.lower()
+                    target_term = target_term.lower()
+                    source_text = segment.source_text.lower()
+                    target_text = segment.target_text.lower()
 
+                    # Get number of instances of each term in present segment
+                    source_instances = source_text.count(source_term)
+                    target_instances = target_text.count(target_term)
+
+                    # Error condition:
+                    # if the target terms appears less times than source term
                     if source_instances > 0:
                         if target_instances < source_instances:
 
-                            # Error found
-                            print('\n' + segment.source_text)
-                            print(segment.target_text)
-                            print(str(both_terms))
-                            print(source_term + ' = ' + str(source_instances))
-                            print(target_term + ' = ' + str(target_instances))
+                            # Error found: add as missing term
+                            segment.missing_terms[source_term] = target_term
 
-    results = []
-    return results
+    return translation
 
 
-def output_results(results):
+def output_results(translation):
     '''
     Function for outputting results to the terminal.
     '''
-    pass
+    for segment in translation:
+        if segment.missing_terms:
+            print('\nPlease check the following terms.')
+            for entry in segment.missing_terms:
+                print('\'' + entry + '\' should be translated as \'' + 
+                      segment.missing_terms[entry] + '\'.')
+            print(segment.source_text)
+            print(segment.target_text)
 
 
 def main():
@@ -201,8 +216,8 @@ def main():
     if user_input_check(user_input):
         terminology = get_terminology(user_input[1])
         translation = get_translation(user_input[2])
-        results = check_translation(terminology, translation)
-        output_results(results)
+        translation = check_translation(terminology, translation)
+        output_results(translation)
         
         
 if __name__ == "__main__":
