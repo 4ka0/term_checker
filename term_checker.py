@@ -20,7 +20,8 @@ To execute:
 
 
 import sys
-import xml.etree.ElementTree as ET
+from translate.storage.tmx import tmxfile
+# import xml.etree.ElementTree as ET
 
 
 class Segment():
@@ -99,15 +100,18 @@ def get_translation(translation_file):
     a list called 'translation'.
     '''
     try:
-        with open(translation_file, 'rb') as tmx_file:
-            tree = ET.parse(tmx_file)
+        with open(translation_file, 'rb') as file:
+            # tree = ET.parse(file)
+            tmx_file = tmxfile(file)
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     else:
+        translation = []
+
+        '''
         root = tree.getroot()
         header = root.find('./header')
         source_lang = header.get('srclang')
-        translation = []
 
         # Look at each 'tu' node
         for tu in root.iter('tu'):
@@ -131,12 +135,6 @@ def get_translation(translation_file):
                             for subchild in child:
                                 # Only look at 'seg' child nodes
                                 if subchild.tag == 'seg':
-                                    '''
-                                    Source or target text?
-                                    Check if text exists.
-                                    If not, assign empty string
-                                    to avoid 'None' being assigned.
-                                    '''
                                     if target_lang == '':
                                         if subchild.text:
                                             source_text = subchild.text
@@ -150,7 +148,14 @@ def get_translation(translation_file):
             
             segment = Segment(source_text, target_text, {})
             translation.append(segment)
-   
+        '''
+
+        for node in tmx_file.unit_iter():
+            source_text = node.getsource()
+            target_text = node.gettarget()
+            segment = Segment(source_text, target_text, {})
+            translation.append(segment)
+
         return translation
 
 
