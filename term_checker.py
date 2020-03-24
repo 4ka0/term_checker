@@ -99,8 +99,8 @@ def get_translation(translation_file):
         translation = []  # List of Segment objects
 
         for node in tmx_file.unit_iter():
-            source_text = node.getsource()
-            target_text = node.gettarget()
+            source_text = node.source
+            target_text = node.target
             segment = Segment(source_text, target_text, {})
             translation.append(segment)
 
@@ -139,10 +139,8 @@ def check_translation(terminology, translation):
                     target_instances = target_text.count(target_term)
 
                     if source_instances > 0:
-                        # Error condition: if the target terms appears
-                        # less times than the source term
-                        if target_instances < source_instances:
-
+                        # Error condition: if the target term does not appear
+                        if target_instances == 0:
                             # Error found: add as missing term
                             segment.missing_terms[source_term] = target_term
 
