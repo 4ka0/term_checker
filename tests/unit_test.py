@@ -12,7 +12,7 @@ Test class instantiation.
 '''
 def test_constructor():
     s = Segment('なお、正孔輸送層12は、NiO、（またはMoO3）等の無機材料を...',
-                'moreover, the positive  hole transport layers 12 may...',
+                'Moreover, the positive  hole transport layers 12 may...',
                 {})
     assert isinstance(s, Segment)
 
@@ -20,11 +20,14 @@ def test_constructor():
 '''
 Test user input verification.
 '''
-@pytest.mark.parametrize('user_input,expected',
-                         [(['checker.py', 'test.tmx'], True),
-                          (['checker.py'], False),
-                          (['checker.py', 'test1.tmx', 'test2.tmx'], False),
-                          (['checker.py', 'test1.txt'], False)])
+@pytest.mark.parametrize('user_input,expected', [
+                          (['term_checker.py', 'file.txt', 'file.tmx'], True),
+                          (['term_checker.py'], False),
+                          (['term_checker.py', 'file.txt'], False),
+                          (['term_checker.py', 'file.tmx'], False),
+                          (['term_checker.py', 'file.tmx', 'file.txt'], False),
+                          (['term_checker.py', 'file.txt', 'file.tmx', 'file.tmx'], False)
+                          ])
 def test_user_input_check(user_input, expected):
     assert term_checker.user_input_check(user_input) == expected
 
