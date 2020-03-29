@@ -45,12 +45,15 @@ def test_get_terminology():
                 '図面の簡単な説明	Brief Description of the Drawings',
                 '発明を実施するための形態	Detailed Description',
                 '特許請求の範囲	What is Claimed is:',
+                '特許請求の範囲	patent claims',
                 '要約書	Abstract',
                 '実施形態	exemplary embodiment',
                 '実施の形態	exemplary embodiment',
                 '実施例	example',
                 '従来技術	related art',
-                '解決	address']
+                '解決	address',
+                '解決	solve',
+                '解決	solution']
     terminology = term_checker.get_terminology(glossary_file)
     assert terminology == expected
 

@@ -88,7 +88,7 @@ def get_terminology(glossary_file):
 
 def get_translation(translation_file):
     '''
-    Function for extracting translation from user-specified tmx file.
+    Function for extracting translation from a user-specified tmx file.
     '''
     try:
         with open(translation_file, 'rb') as file:
@@ -110,6 +110,10 @@ def get_translation(translation_file):
 def check_translation(terminology, translation):
     '''
     Function for checking terminology against the translation.
+    Note that it should be possible to translate a given source term 
+    in more than one way; therefore, from the source term to the target term, 
+    a one-to-many relationship is permitted, i.e. a one-to-one relationship
+    would be too strict.
     '''
     
     for segment in translation:
