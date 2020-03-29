@@ -60,13 +60,20 @@ Test extraction of translation from tmx file.
 '''
 def test_get_translation():
     translation_file = 'tests/test_translation.tmx'
-    expected = [('[図1]画像形成装置の概略構成の一例を示す断面模式図である。', 'Fig. 1 is a cross-sectional schematic view depicting an example of the schematic configuration of an image forming device;'),
-                ('[図2]感光体ユニット及び現像装置の構成を説明する図である。', 'Fig. 2 is a drawing illustrating the configuration of a photoconductor unit and a developing device;'),
-                ('[図3]清掃装置の構成を示す断面模式図である。', 'Fig. 3 is a cross-sectional schematic view depicting the configuration of a cleaning device;'),
-                ('[図4]清掃装置の第1搬送オーガ及び第2搬送オーガの回転駆動を説明する図である。', 'Fig. 4 is a drawing illustrating rotational driving of a 1st conveying auger and a 2nd conveying auger of the cleaning device;'),
-                ('[図5]画像形成装置の前面側における廃トナー搬送部の構成を示す図である。', 'Fig. 5 is a drawing depicting the configuration of a waste toner conveying unit at the front side of the image forming device;'),
-                ('[図6]画像形成装置の裏面側における廃トナー落下部の構成を示す図である。', 'Fig. 6 is a drawing depicting the configuration of a waste toner dropping section at the rear side of the image forming device; and'),
-                ('[図7]本実施形態に係る廃トナー回収経路の全体構成を示す平面模式図である。', 'Fig. 7 is a plan schematic view depicting the overall configuration of a waste toner recovery path according to the present exemplary embodiment.')]
+    expected = [('[図1]...を示す断面模式図である。', 
+                 'Fig. 1 is a cross-sectional schematic view depicting ...'),
+                ('[図2]...を説明する図である。', 
+                 'Fig. 2 is a drawing illustrating ...'),
+                ('[図3]...を示す断面模式図である。', 
+                 'Fig. 3 is a cross-sectional schematic view depicting ...'),
+                ('[図4]...を説明する図である。', 
+                 'Fig. 4 is a drawing illustrating ...'),
+                ('[図5]...を示す図である。', 
+                 'Fig. 5 is a drawing depicting ...'),
+                ('[図6]...を示す図である。', 
+                 'Fig. 6 is a drawing depicting ...'),
+                ('[図7]...を示す平面模式図である。', 
+                 'Fig. 7 is a plan schematic view depicting ...')]
     segments = term_checker.get_translation(translation_file)
     translation = []
     for segment in segments:
