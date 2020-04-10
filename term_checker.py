@@ -22,10 +22,10 @@ class Segment():
     Used to create objects for each source-target segment extracted
     from a tmx file.
     '''
-    def __init__(self, source_text, target_text, missing_terms):
+    def __init__(self, source_text, target_text, missing):
         self.source_text = source_text
         self.target_text = target_text
-        self.missing_terms = missing_terms
+        self.missing = missing  # Missing terms, if found
 
 
 def user_input_check(user_input):
@@ -69,8 +69,6 @@ def user_input_check(user_input):
 def get_terminology(glossary_file):
     '''
     Function for extracting terminology from user-specified txt file.
-    Entries are stored as single tab-delimited string and added to
-    a list called 'terminology'.
     '''
     try:
         with open(glossary_file) as f:
@@ -84,6 +82,41 @@ def get_terminology(glossary_file):
         print(fnf_error)
     else:
         return terminology
+
+
+def remove_duplicates(terminology):
+    '''
+    Function to remove duplicate entries.
+    '''
+    unique_terminology = []
+
+    for entry in terminology:
+        if entry not in unique_terminology:
+            unique_terminology.append(entry)
+
+    return unique_terminology
+
+
+def group_terms(terminology):
+    '''
+    Function to remove duplicate entries, and also to group entries together
+    if applicable (i.e. if there is a source term that has two or more
+    possible target terms).
+    '''
+    # grouped_terminology = {}
+
+    # 
+
+    '''
+        Group these into following format:
+        {source: (target, ...)}
+        Allows for a source term to be translated in multiple ways
+    '''
+
+    # return grouped_terminology
+    return terminology
+
+    
 
 
 def get_translation(translation_file):
@@ -127,26 +160,22 @@ def check_translation(terminology, translation):
                 for entry in terminology:
                     
                     # Extract source and target terms
+                    # Only proceed if two terms are extracted
                     both_terms = entry.split('\t')
                     if len(both_terms) == 2:
                         source_term = both_terms[0]
                         target_term = both_terms[1]
 
-                    # Convert all to lower case for case-insensitive comparison
-                    source_term = source_term.lower()
-                    target_term = target_term.lower()
-                    source_text = segment.source_text.lower()
-                    target_text = segment.target_text.lower()
+                        # For a case-insensitive comparison
+                        source_term = source_term.lower()
+                        target_term = target_term.lower()
+                        source_text = segment.source_text.lower()
+                        target_text = segment.target_text.lower()
 
-                    # Get number of instances of each term in present segment
-                    source_instances = source_text.count(source_term)
-                    target_instances = target_text.count(target_term)
-
-                    if source_instances > 0:
-                        # Error condition: if the target term does not appear
-                        if target_instances == 0:
-                            # Error found: add as missing term
-                            segment.missing_terms[source_term] = target_term
+                        # Check for missing target term
+                        if (source_term in source_text and
+                            target_term not in target_text):
+                                segment.missing[source_term] = target_term
 
     return translation
 
@@ -155,12 +184,21 @@ def output_results(translation):
     '''
     Function for outputting results to the terminal.
     '''
+
+    '''
+    *** TO DO ***
+
+    Output message is no errors have been found.
+    Do the same for honyaku_checker?
+
+    '''
+
     for segment in translation:
-        if segment.missing_terms:
+        if segment.missing:
             print('\nPlease check the following terms.')
-            for entry in segment.missing_terms:
+            for entry in segment.missing:
                 print('\'' + entry + '\' should be translated as \'' + 
-                      segment.missing_terms[entry] + '\'.')
+                      segment.missing[entry] + '\'.')
             print(segment.source_text)
             print(segment.target_text)
 
@@ -169,6 +207,8 @@ def main():
     user_input = sys.argv
     if user_input_check(user_input):
         terminology = get_terminology(user_input[1])
+        terminology = remove_duplicates(terminology)
+        terminology = group_terms(terminology)
         translation = get_translation(user_input[2])
         translation = check_translation(terminology, translation)
         output_results(translation)
