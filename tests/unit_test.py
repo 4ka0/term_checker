@@ -52,7 +52,7 @@ def test_get_terminology():
     assert terminology == expected
 
 
-def test_remove_duplicates():
+def test_clean_terminology():
     expected = ['技術分野	Technical Field',
                 '背景技術	Related Art', 
                 '発明の概要	Summary', 
@@ -72,7 +72,7 @@ def test_remove_duplicates():
                 '解決	solution']
     glossary_file = 'tests/test_glossary.txt'
     terminology = term_checker.get_terminology(glossary_file)
-    terminology = term_checker.remove_duplicates(terminology)
+    terminology = term_checker.clean_terminology(terminology)
     assert terminology == expected
 
 

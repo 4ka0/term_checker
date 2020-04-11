@@ -68,28 +68,31 @@ def user_input_check(user_input):
 
 def get_terminology(glossary_file):
     '''
-    Function for extracting terminology from user-specified txt file.
+    Function for reading in terminology from user-specified txt file.
     '''
     try:
         with open(glossary_file) as f:
             terminology = f.readlines()
-            # Remove surrounding whitespace chars from each line including '\n'
-            terminology = [line.strip() for line in terminology]
-            # Remove possible '*' chars from the start of each line
-            # (I have these in some of my client glossaries)
-            terminology = [line.lstrip('*') for line in terminology]
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     else:
         return terminology
 
 
-def remove_duplicates(terminology):
+def clean_terminology(terminology):
     '''
-    Function to remove duplicate entries.
+    Function to clean enties in terminology list and also to remove duplicate 
+    entries. 
+    (1) Removes surrounding whitespace chars from each line (including '\n')
+    (2) Removes '*' chars from the start of each line (I have these in some of 
+        my client glossaries).
+    (3) Removes duplicate entries.
     '''
-    unique_terminology = []
 
+    terminology = [line.strip() for line in terminology]
+    terminology = [line.lstrip('*') for line in terminology]
+
+    unique_terminology = []
     for entry in terminology:
         if entry not in unique_terminology:
             unique_terminology.append(entry)
@@ -97,7 +100,7 @@ def remove_duplicates(terminology):
     return unique_terminology
 
 
-def group_terms(terminology):
+def group_terminology(terminology):
     '''
     Function to remove duplicate entries, and also to group entries together
     if applicable (i.e. if there is a source term that has two or more
@@ -207,8 +210,8 @@ def main():
     user_input = sys.argv
     if user_input_check(user_input):
         terminology = get_terminology(user_input[1])
-        terminology = remove_duplicates(terminology)
-        terminology = group_terms(terminology)
+        terminology = clean_terminology(terminology)
+        terminology = group_terminology(terminology)
         translation = get_translation(user_input[2])
         translation = check_translation(terminology, translation)
         output_results(translation)
