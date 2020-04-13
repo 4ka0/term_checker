@@ -27,26 +27,26 @@ def test_user_input_check(user_input, expected):
 
 
 def test_get_terminology():
-    expected = ['技術分野	Technical Field',
-                '背景技術	Related Art', 
-                '発明の概要	Summary', 
-                '発明の概要	Summary', 
-                '発明が解決しようとする課題	Problem to be Solved by the Invention',
-                '課題を解決するための手段	Means for Solving the Problem',
-                '図面の簡単な説明	Brief Description of the Drawings',
-                '発明を実施するための形態	Detailed Description',
-                '特許請求の範囲	What is Claimed is:',
-                '特許請求の範囲	patent claims',
-                '要約書	Abstract',
-                '要約書	Abstract',
-                '要約書	Abstract',
-                '実施形態	exemplary embodiment',
-                '実施の形態	exemplary embodiment',
-                '実施例	example',
-                '従来技術	related art',
-                '解決	address',
-                '解決	solve',
-                '解決	solution']
+    expected = ['*技術分野	Technical Field\n',
+                '*背景技術	Related Art\n', 
+                '*発明の概要	Summary\n', 
+                '*発明の概要	Summary\n', 
+                '*発明が解決しようとする課題	Problem to be Solved by the Invention\n',
+                '*課題を解決するための手段	Means for Solving the Problem\n',
+                '*図面の簡単な説明	Brief Description of the Drawings\n',
+                '*発明を実施するための形態	Detailed Description\n',
+                '*特許請求の範囲	What is Claimed is:\n',
+                '*特許請求の範囲	patent claims\n',
+                '*要約書	Abstract\n',
+                '*要約書	Abstract\n',
+                '*要約書	Abstract\n',
+                '*実施形態	exemplary embodiment\n',
+                '*実施の形態	exemplary embodiment\n',
+                '*実施例	example\n',
+                '*従来技術	related art\n',
+                '*解決	address\n',
+                '*解決	solve\n',
+                '*解決	solution']
     glossary_file = 'tests/test_glossary.txt'
     terminology = term_checker.get_terminology(glossary_file)
     assert terminology == expected

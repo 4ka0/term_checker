@@ -79,47 +79,60 @@ def get_terminology(glossary_file):
         return terminology
 
 
-def clean_terminology(terminology):
+def clean_lines(terminology):
     '''
     Function to clean enties in terminology list and also to remove duplicate 
     entries. 
     (1) Removes surrounding whitespace chars from each line (including '\n')
     (2) Removes '*' chars from the start of each line (I have these in some of 
         my client glossaries).
-    (3) Removes duplicate entries.
     '''
-
     terminology = [line.strip() for line in terminology]
     terminology = [line.lstrip('*') for line in terminology]
+    return terminology
 
+
+def entry_check(terminology):
+    '''
+    Function to check whether there are two entries on each line. In other
+    words, whether each line contains two substrings (source and target text)
+    delimited by a single tab character. Lines not formatted this way are
+    passed over.
+    '''
+    formatted_terminology = []
+    for entry in terminology:
+        split_terms = entry.split('\t')
+        if len(split_terms) == 2:
+            formatted_terminology.append(entry)
+    return formatted_terminology
+
+
+def remove_duplicates(terminology):
+    '''
+    Function to remove duplicate entries.
+    '''
     unique_terminology = []
     for entry in terminology:
         if entry not in unique_terminology:
             unique_terminology.append(entry)
-
     return unique_terminology
 
 
 def group_terminology(terminology):
     '''
-    Function to remove duplicate entries, and also to group entries together
-    if applicable (i.e. if there is a source term that has two or more
-    possible target terms).
+    Function to group entries together if a source term has more than one 
+    target term, i.e if a source term is translated in more than one way.
+    These are grouped into a dictionary in which the key is the source term 
+    and the key is a list containing target terms: {source: [target, ...]}
     '''
-    # grouped_terminology = {}
+    grouped_terminology = {}
+    for entry in terminology:
+        split_terms = entry.split('\t')
+        source_term = split_terms[0]
+        target_term = split_terms[1]
 
-    # 
 
-    '''
-        Group these into following format:
-        {source: (target, ...)}
-        Allows for a source term to be translated in multiple ways
-    '''
-
-    # return grouped_terminology
-    return terminology
-
-    
+    return grouped_terminology
 
 
 def get_translation(translation_file):
@@ -210,7 +223,9 @@ def main():
     user_input = sys.argv
     if user_input_check(user_input):
         terminology = get_terminology(user_input[1])
-        terminology = clean_terminology(terminology)
+        terminology = clean_lines(terminology)
+        terminology = entry_check(terminology)
+        terminology = remove_duplicates(terminology)
         terminology = group_terminology(terminology)
         translation = get_translation(user_input[2])
         translation = check_translation(terminology, translation)
