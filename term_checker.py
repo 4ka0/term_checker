@@ -120,18 +120,34 @@ def remove_duplicates(terminology):
 
 def group_terminology(terminology):
     '''
-    Function to group entries together if a source term has more than one 
-    target term, i.e if a source term is translated in more than one way.
-    These are grouped into a dictionary in which the key is the source term 
-    and the key is a list containing target terms: {source: [target, ...]}
+    Function to group entries together if there is more than one target term
+    for a source term, i.e if a source term can be translated in more than one
+    way. These are grouped into a dictionary in which the key is the source
+    term and the value is a list containing target terms, i.e.:
+    {source: [target, ...]}
     '''
     grouped_terminology = {}
+    
     for entry in terminology:
         split_terms = entry.split('\t')
         source_term = split_terms[0]
         target_term = split_terms[1]
+    
+        if source_term in grouped_terminology:
+            
+            # Add the target term to the list corresponding to the source term
+            # Get the current list of target terms for the source term
+            translations = grouped_terminology[source_term]
+            # Append the new target term to the list
+            translations.append(target_term)
+            # Assign the new larger list to the source term
+            grouped_terminology[source_term] = translations
 
-
+        else:            
+            # Add new entry with the key being the source term and 
+            # the value being a list containing the single target term
+            grouped_terminology[source_term] = [target_term]
+            
     return grouped_terminology
 
 
