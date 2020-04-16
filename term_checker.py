@@ -124,15 +124,16 @@ def group_terminology(terminology):
     for a source term, i.e if a source term can be translated in more than one
     way. These are grouped into a dictionary in which the key is the source
     term and the value is a list containing target terms, i.e.:
-    {source: [target, ...]}
+    {source: [target1, target2, ...]}
     '''
     grouped_terminology = {}
     
     for entry in terminology:
         split_terms = entry.split('\t')
-        source_term = split_terms[0]
-        target_term = split_terms[1]
-    
+        source_term = split_terms[0].lower()
+        target_term = split_terms[1].lower()
+
+        # Check if source term already appears as a key
         if source_term in grouped_terminology:
             
             # Add the target term to the list corresponding to the source term
@@ -174,11 +175,8 @@ def get_translation(translation_file):
 
 def check_translation(terminology, translation):
     '''
-    Function for checking terminology against the translation.
-    Note that it should be possible to translate a given source term 
-    in more than one way; therefore, from the source term to the target term, 
-    a one-to-many relationship is permitted, i.e. a one-to-one relationship
-    would be too strict.
+    Function for checking that terminology has been translated in the correct
+    way in the translation according to the user-specified terminology.
     '''
     
     for segment in translation:
@@ -189,25 +187,17 @@ def check_translation(terminology, translation):
                 not segment.target_text.isspace()):
         
                 # Check if any source terminology is in the source text
-                for entry in terminology:
-                    
-                    # Extract source and target terms
-                    # Only proceed if two terms are extracted
-                    both_terms = entry.split('\t')
-                    if len(both_terms) == 2:
-                        source_term = both_terms[0]
-                        target_term = both_terms[1]
+                # term here is the keys in the termonology dict
+                for term in terminology:
+                    if term in segment.source_text:
 
-                        # For a case-insensitive comparison
-                        source_term = source_term.lower()
-                        target_term = target_term.lower()
-                        source_text = segment.source_text.lower()
-                        target_text = segment.target_text.lower()
-
-                        # Check for missing target term
-                        if (source_term in source_text and
-                            target_term not in target_text):
-                                segment.missing[source_term] = target_term
+                        # Check if any corresponding target term appears 
+                        # in the target text.
+                        found = any(elem in segment.target_text.lower()
+                                     for elem in terminology[term])    
+                        
+                        if found == False:
+                            segment.missing[term] = terminology[term]
 
     return translation
 
@@ -216,23 +206,26 @@ def output_results(translation):
     '''
     Function for outputting results to the terminal.
     '''
-
-    '''
-    *** TO DO ***
-
-    Output message is no errors have been found.
-    Do the same for honyaku_checker?
-
-    '''
+    errors_found = False
 
     for segment in translation:
         if segment.missing:
-            print('\nPlease check the following terms.')
-            for entry in segment.missing:
-                print('\'' + entry + '\' should be translated as \'' + 
-                      segment.missing[entry] + '\'.')
+            
+            errors_found = True
+            print('\n')
+            
+            for source_term in segment.missing:
+                print('\'' + source_term + '\' should be translated as:')
+                for target_term in segment.missing[source_term]:
+                    print('> ' + target_term)
+            
+            print('Source text:')
             print(segment.source_text)
+            print('Target text:')
             print(segment.target_text)
+    
+    if errors_found == False:
+        print('\nNo terminology errors found.\n')
 
 
 def main():
