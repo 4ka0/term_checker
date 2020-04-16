@@ -213,13 +213,27 @@ def output_results(translation):
             
             errors_found = True
             print('\n')
-            
+
             for source_term in segment.missing:
-                print('\'' + source_term + '\' should be translated as:')
+                print('\'' + source_term + '\' should be translated as', end=' ')
+
+                # Get number of target terms.
+                target_num = len(segment.missing[source_term])
+                counter = 0
+
                 for target_term in segment.missing[source_term]:
-                    print('> ' + target_term)
+                    counter += 1
+                    # Second to last element.
+                    if counter == target_num - 1:
+                        print('\'' + target_term + '\'', end=', or ')
+                    # Last element.
+                    elif counter == target_num:  
+                        print('\'' + target_term + '\'', end=' ')
+                    # Any other element.
+                    else:
+                        print('\'' + target_term + '\'', end=', ')
             
-            print('Source text:')
+            print('\nSource text:')
             print(segment.source_text)
             print('Target text:')
             print(segment.target_text)
