@@ -138,7 +138,27 @@ def test_remove_duplicates():
 
 
 def test_group_terminology():
-    pass
+    expected = {'技術分野': ['Technical Field'],
+                '背景技術': ['Related Art'], 
+                '発明の概要': ['Summary'],
+                '発明が解決しようとする課題': ['Problem to be Solved by the Invention'],
+                '課題を解決するための手段': ['Means for Solving the Problem'],
+                '図面の簡単な説明': ['Brief Description of the Drawings'],
+                '発明を実施するための形態': ['Detailed Description'],
+                '特許請求の範囲': ['What is Claimed is:', 'patent claims'],
+                '要約書': ['Abstract'],
+                '実施形態': ['exemplary embodiment'],
+                '実施の形態': ['exemplary embodiment'],
+                '実施例': ['example'],
+                '従来技術': ['related art'],
+                '解決': ['address', 'solve', 'solution']}
+    terminology = term_checker.get_terminology(GLOSSARY_FILE)
+    terminology = term_checker.clean_lines(terminology)
+    terminology = term_checker.format_check(terminology)
+    terminology = term_checker.remove_duplicates(terminology)
+    terminology = term_checker.group_terminology(terminology)
+    assert terminology == expected
+    
 
 
 def test_get_translation():

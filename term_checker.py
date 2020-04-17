@@ -137,8 +137,8 @@ def group_terminology(terminology):
     
     for entry in terminology:
         split_terms = entry.split('\t')
-        source_term = split_terms[0].lower()
-        target_term = split_terms[1].lower()
+        source_term = split_terms[0]
+        target_term = split_terms[1]
 
         # If source term already appears as a key.
         if source_term in grouped_terminology:
@@ -181,25 +181,28 @@ def check_translation(terminology, translation):
     Function for checking that terminology has been translated in the correct
     way in the translation according to the user-specified terminology.
     '''
-    
+
     for segment in translation:
 
         # Only proceed if there is actual source and target text.
         if segment.source_text and segment.target_text:
             if (not segment.source_text.isspace() and 
                 not segment.target_text.isspace()):
-        
+
                 # Check if any source terminology is in the source text.
-                # 'source_term' here refers to keys in the terminology dict.
                 for entry in terminology:
+                # 'source_term' here refers to keys in the terminology dict.
                     if entry in segment.source_text:
+
+                        # Case-insensitive comparison to find target terms
+                        text = segment.target_text.lower()
+                        terms = [x.lower() for x in terminology[entry]]
 
                         # Check if any corresponding target term appears 
                         # in the target text.
-                        found = any(elem in segment.target_text.lower()
-                                    for elem in terminology[entry])    
+                        found = any(elem in text for elem in terms)    
                         
-                        if found == False:
+                        if not found:
                             segment.missing_terms[entry] = terminology[entry]
 
     return translation
