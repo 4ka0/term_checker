@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Script to check whether project-specific terminology is being used 
+Script to check whether project-specific terminology is being used
 in a translation (tmx file).
 
 Terminology is assumed to be listed in a tab-delimited file (txt file)
@@ -88,10 +88,10 @@ def get_terminology(glossary_file):
 
 def clean_lines(terminology):
     '''
-    Function to clean entries in a terminology list and also to remove 
+    Function to clean entries in a terminology list and also to remove
     duplicate entries. Specifically:
     (1) Removes surrounding whitespace chars from each line (including '\n')
-    (2) Removes '*' chars from the start of each line (I have these in some of 
+    (2) Removes '*' chars from the start of each line (I have these in some of
         my client glossaries).
     '''
     terminology = [line.strip() for line in terminology]
@@ -134,7 +134,7 @@ def group_terminology(terminology):
     {source: [target1, target2, ...]}
     '''
     grouped_terminology = {}
-    
+
     for entry in terminology:
         split_terms = entry.split('\t')
         source_term = split_terms[0]
@@ -146,11 +146,11 @@ def group_terminology(terminology):
             target_terms.append(target_term)
             grouped_terminology[source_term] = target_terms
 
-        else:            
+        else:
             # Add new entry with the source term as the key and
             # a list containing the single target term as the value.
             grouped_terminology[source_term] = [target_term]
-            
+
     return grouped_terminology
 
 
@@ -186,7 +186,7 @@ def check_translation(terminology, translation):
 
         # Only proceed if there is actual source and target text.
         if segment.source_text and segment.target_text:
-            if (not segment.source_text.isspace() and 
+            if (not segment.source_text.isspace() and
                 not segment.target_text.isspace()):
 
                 # Check if any source terminology is in the source text.
@@ -198,10 +198,10 @@ def check_translation(terminology, translation):
                         text = segment.target_text.lower()
                         terms = [x.lower() for x in terminology[entry]]
 
-                        # Check if any corresponding target term appears 
+                        # Check if any corresponding target term appears
                         # in the target text.
-                        found = any(elem in text for elem in terms)    
-                        
+                        found = any(elem in text for elem in terms)
+
                         if not found:
                             segment.missing_terms[entry] = terminology[entry]
 
@@ -216,7 +216,7 @@ def output_results(translation):
 
     for segment in translation:
         if segment.missing_terms:
-            
+
             errors_found = True
             print('\n')
 
@@ -233,17 +233,17 @@ def output_results(translation):
                     if counter == target_num - 1:
                         print('\'' + target + '\'', end=', or ')
                     # Last element.
-                    elif counter == target_num:  
+                    elif counter == target_num:
                         print('\'' + target + '\'', end=' ')
                     # Any other element.
                     else:
                         print('\'' + target + '\'', end=', ')
-            
+
             print('\nSource text:')
             print(segment.source_text)
             print('Target text:')
             print(segment.target_text)
-    
+
     if errors_found == False:
         print('\nNo terminology errors found.\n')
 
@@ -259,7 +259,7 @@ def main():
         translation = get_translation(user_input[2])
         translation = check_translation(terminology, translation)
         output_results(translation)
-        
-        
+
+
 if __name__ == "__main__":
     main()

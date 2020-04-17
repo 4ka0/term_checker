@@ -32,9 +32,9 @@ def test_user_input_check(user_input, expected):
 
 def test_get_terminology():
     expected = ['*技術分野	Technical Field\n',
-                '*背景技術	Related Art\n', 
-                '*発明の概要	Summary\n', 
-                '*発明の概要	Summary\n', 
+                '*背景技術	Related Art\n',
+                '*発明の概要	Summary\n',
+                '*発明の概要	Summary\n',
                 '*発明が解決しようとする課題	Problem to be Solved by the Invention\n',
                 '*課題を解決するための手段	Means for Solving the Problem\n',
                 '*図面の簡単な説明	Brief Description of the Drawings\n',
@@ -52,16 +52,18 @@ def test_get_terminology():
                 '*解決	solve\n',
                 '*解決	solution\n',
                 '*装置	device	apparatus\n',
-                '*特許	patent	patent']
+                '*特許	patent	patent\n',
+                '*断面模式図	cross-sectional schematic view\n',
+                '*平面模式図	plan schematic view']
     terminology = term_checker.get_terminology(GLOSSARY_FILE)
     assert terminology == expected
 
 
 def test_clean_lines():
     expected = ['技術分野	Technical Field',
-                '背景技術	Related Art', 
-                '発明の概要	Summary', 
-                '発明の概要	Summary', 
+                '背景技術	Related Art',
+                '発明の概要	Summary',
+                '発明の概要	Summary',
                 '発明が解決しようとする課題	Problem to be Solved by the Invention',
                 '課題を解決するための手段	Means for Solving the Problem',
                 '図面の簡単な説明	Brief Description of the Drawings',
@@ -79,7 +81,9 @@ def test_clean_lines():
                 '解決	solve',
                 '解決	solution',
                 '装置	device	apparatus',
-                '特許	patent	patent']
+                '特許	patent	patent',
+                '断面模式図	cross-sectional schematic view',
+                '平面模式図	plan schematic view']
     terminology = term_checker.get_terminology(GLOSSARY_FILE)
     terminology = term_checker.clean_lines(terminology)
     assert terminology == expected
@@ -87,9 +91,9 @@ def test_clean_lines():
 
 def test_format_check():
     expected = ['技術分野	Technical Field',
-                '背景技術	Related Art', 
-                '発明の概要	Summary', 
-                '発明の概要	Summary', 
+                '背景技術	Related Art',
+                '発明の概要	Summary',
+                '発明の概要	Summary',
                 '発明が解決しようとする課題	Problem to be Solved by the Invention',
                 '課題を解決するための手段	Means for Solving the Problem',
                 '図面の簡単な説明	Brief Description of the Drawings',
@@ -105,7 +109,9 @@ def test_format_check():
                 '従来技術	related art',
                 '解決	address',
                 '解決	solve',
-                '解決	solution']
+                '解決	solution',
+                '断面模式図	cross-sectional schematic view',
+                '平面模式図	plan schematic view']
     terminology = term_checker.get_terminology(GLOSSARY_FILE)
     terminology = term_checker.clean_lines(terminology)
     terminology = term_checker.format_check(terminology)
@@ -114,7 +120,7 @@ def test_format_check():
 
 def test_remove_duplicates():
     expected = ['技術分野	Technical Field',
-                '背景技術	Related Art', 
+                '背景技術	Related Art',
                 '発明の概要	Summary',
                 '発明が解決しようとする課題	Problem to be Solved by the Invention',
                 '課題を解決するための手段	Means for Solving the Problem',
@@ -129,7 +135,9 @@ def test_remove_duplicates():
                 '従来技術	related art',
                 '解決	address',
                 '解決	solve',
-                '解決	solution']
+                '解決	solution',
+                '断面模式図	cross-sectional schematic view',
+                '平面模式図	plan schematic view']
     terminology = term_checker.get_terminology(GLOSSARY_FILE)
     terminology = term_checker.clean_lines(terminology)
     terminology = term_checker.format_check(terminology)
@@ -139,7 +147,7 @@ def test_remove_duplicates():
 
 def test_group_terminology():
     expected = {'技術分野': ['Technical Field'],
-                '背景技術': ['Related Art'], 
+                '背景技術': ['Related Art'],
                 '発明の概要': ['Summary'],
                 '発明が解決しようとする課題': ['Problem to be Solved by the Invention'],
                 '課題を解決するための手段': ['Means for Solving the Problem'],
@@ -151,31 +159,32 @@ def test_group_terminology():
                 '実施の形態': ['exemplary embodiment'],
                 '実施例': ['example'],
                 '従来技術': ['related art'],
-                '解決': ['address', 'solve', 'solution']}
+                '解決': ['address', 'solve', 'solution'],
+                '断面模式図': ['cross-sectional schematic view'],
+                '平面模式図': ['plan schematic view']}
     terminology = term_checker.get_terminology(GLOSSARY_FILE)
     terminology = term_checker.clean_lines(terminology)
     terminology = term_checker.format_check(terminology)
     terminology = term_checker.remove_duplicates(terminology)
     terminology = term_checker.group_terminology(terminology)
     assert terminology == expected
-    
 
 
 def test_get_translation():
-    expected = [('[図1]...を示す断面模式図である。', 
-                 'Fig. 1 is a cross-sectional schematic view depicting ...'),
-                ('[図2]...を説明する図である。', 
+    expected = [('[図1]...を示す断面模式図である。',
+                 'Fig. 1 is a schematic view depicting ...'),
+                ('[図2]...を説明する図である。',
                  'Fig. 2 is a drawing illustrating ...'),
-                ('[図3]...を示す断面模式図である。', 
+                ('[図3]...を示す断面模式図である。',
                  'Fig. 3 is a cross-sectional schematic view depicting ...'),
-                ('[図4]...を説明する図である。', 
+                ('[図4]...を説明する図である。',
                  'Fig. 4 is a drawing illustrating ...'),
-                ('[図5]...を示す図である。', 
+                ('[図5]...を示す図である。',
                  'Fig. 5 is a drawing depicting ...'),
-                ('[図6]...を示す図である。', 
+                ('[図6]...を示す図である。',
                  'Fig. 6 is a drawing depicting ...'),
-                ('[図7]...を示す平面模式図である。', 
-                 'Fig. 7 is a plan schematic view depicting ...')]
+                ('[図7]...を示す平面模式図である。',
+                 'Fig. 7 is a plan schematic depicting ...')]
     segments = term_checker.get_translation(TRANSLATION_FILE)
     translation = []
     for segment in segments:
