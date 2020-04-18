@@ -16,11 +16,13 @@ these are entered on separate lines rather than all on the same line, e.g.:
     source_term <tab> target_term_3
 
 To execute:
-    python3 term_checker.py glossary.txt translation.tmx
+    python3 term_checker.py translation.tmx glossary.txt
 '''
 
 
 import sys
+
+from colorama import Fore
 from translate.storage.tmx import tmxfile
 
 
@@ -30,21 +32,21 @@ class Segment():
     from a tmx file.
     '''
     def __init__(self, source_text, target_text, missing_terms):
-        self.source_text = source_text
-        self.target_text = target_text
-        self.missing_terms = missing_terms
+        self.source_text = source_text  # string
+        self.target_text = target_text  # string
+        self.missing_terms = missing_terms  # dict
 
 
 def user_input_check(user_input):
     '''
     Function for validating user input entered at the command line.
     Expected input:
-        python3 terminology_check.py glossary.txt translation.tmx
+        python3 terminology_check.py translation.tmx glossary.txt
     Aspects checked:
         3 arguments should have been entered
         (1st argument is the name of this script)
-        2nd argument should be a txt file (glossary)
-        3rd argument should be a tmx file (translation)
+        2nd argument should be a tmx file (translation)
+        3rd argument should be a txt file (glossary)
     '''
     input_verified = True
 
@@ -53,24 +55,46 @@ def user_input_check(user_input):
         input_verified = False
 
     else:
-        glossary_file = user_input[1]
-        translation_file = user_input[2]
+        translation_file = user_input[1]
+        glossary_file = user_input[2]
 
-        # Check if 2nd argument is a txt file.
-        if not glossary_file.lower().endswith('.txt'):
+        # Check if 2nd argument is a tmx file.
+        if not translation_file.lower().endswith('.tmx'):
             input_verified = False
 
-        # Check if 3rd argument is a tmx file.
-        if not translation_file.lower().endswith('.tmx'):
+        # Check if 3rd argument is a txt file.
+        if not glossary_file.lower().endswith('.txt'):
             input_verified = False
 
     # Error message.
     if not input_verified:
         print('\nIncorrect input.\n'
               'Please try again using the following format.\n'
-              'python3 terminology_check.py glossary.txt translation.tmx\n')
+              'python3 terminology_check.py translation.tmx glossary.txt\n')
 
     return input_verified
+
+
+def get_translation(translation_file):
+    '''
+    Function for extracting translation from a user-specified tmx file.
+    '''
+    try:
+        with open(translation_file, 'rb') as file:
+            tmx_file = tmxfile(file)
+    except FileNotFoundError as fnf_error:
+        print(fnf_error)
+    else:
+        translation = []  # List of Segment objects
+
+        for node in tmx_file.unit_iter():
+            source_text = node.source
+            target_text = node.target
+            # {} below is 'missing_terms'
+            segment = Segment(source_text, target_text, {})
+            translation.append(segment)
+
+        return translation
 
 
 def get_terminology(glossary_file):
@@ -154,28 +178,6 @@ def group_terminology(terminology):
     return grouped_terminology
 
 
-def get_translation(translation_file):
-    '''
-    Function for extracting translation from a user-specified tmx file.
-    '''
-    try:
-        with open(translation_file, 'rb') as file:
-            tmx_file = tmxfile(file)
-    except FileNotFoundError as fnf_error:
-        print(fnf_error)
-    else:
-        translation = []  # List of Segment objects
-
-        for node in tmx_file.unit_iter():
-            source_text = node.source
-            target_text = node.target
-            # {} below is 'missing_terms'
-            segment = Segment(source_text, target_text, {})
-            translation.append(segment)
-
-        return translation
-
-
 def check_translation(terminology, translation):
     '''
     Function for checking that terminology has been translated in the correct
@@ -185,27 +187,38 @@ def check_translation(terminology, translation):
     for segment in translation:
 
         # Only proceed if there is actual source and target text.
-        if segment.source_text and segment.target_text:
-            if (not segment.source_text.isspace() and
-                not segment.target_text.isspace()):
+        if contains_content(segment):
 
-                # Check if any source terminology is in the source text.
-                for entry in terminology:
-                # 'source_term' here refers to keys in the terminology dict.
-                    if entry in segment.source_text:
+            # Check if any source terminology is in the source text.
+            for entry in terminology:
+            # 'source_term' here refers to keys in the terminology dict.
+                if entry in segment.source_text:
 
-                        # Case-insensitive comparison to find target terms
-                        text = segment.target_text.lower()
-                        terms = [x.lower() for x in terminology[entry]]
+                    # Case-insensitive comparison to find target terms
+                    text = segment.target_text.lower()
+                    terms = [x.lower() for x in terminology[entry]]
 
-                        # Check if any corresponding target term appears
-                        # in the target text.
-                        found = any(elem in text for elem in terms)
+                    # Check if any corresponding target term appears
+                    # in the target text.
+                    found = any(elem in text for elem in terms)
 
-                        if not found:
-                            segment.missing_terms[entry] = terminology[entry]
+                    if not found:
+                        segment.missing_terms[entry] = terminology[entry]
 
     return translation
+
+
+def contains_content(segment):
+    '''
+    Function to check if a segment contains actual source and target text
+    that is not simply whitespace.
+    '''
+    if segment.source_text:
+        if segment.target_text:
+            if not segment.source_text.isspace():
+                if not segment.target_text.isspace():
+                    return True
+    return False
 
 
 def output_results(translation):
@@ -221,7 +234,8 @@ def output_results(translation):
             print('\n')
 
             for source in segment.missing_terms:
-                print('\'' + source + '\' should be translated as', end=' ')
+                print(Fore.RED + '\'' + source + '\' should be translated as',
+                      end=' ')
 
                 # Get the number of target terms.
                 target_num = len(segment.missing_terms[source])
@@ -239,24 +253,24 @@ def output_results(translation):
                     else:
                         print('\'' + target + '\'', end=', ')
 
-            print('\nSource text:')
-            print(segment.source_text)
-            print('Target text:')
-            print(segment.target_text)
+            print(Fore.CYAN + '\nSource text:')
+            print(Fore.RESET + segment.source_text)
+            print(Fore.CYAN + 'Target text:')
+            print(Fore.RESET + segment.target_text)
 
     if errors_found == False:
-        print('\nNo terminology errors found.\n')
+        print(Fore.CYAN + '\nNo terminology errors found.\n')
 
 
 def main():
     user_input = sys.argv
     if user_input_check(user_input):
-        terminology = get_terminology(user_input[1])
+        translation = get_translation(user_input[1])
+        terminology = get_terminology(user_input[2])
         terminology = clean_lines(terminology)
         terminology = format_check(terminology)
         terminology = remove_duplicates(terminology)
         terminology = group_terminology(terminology)
-        translation = get_translation(user_input[2])
         translation = check_translation(terminology, translation)
         output_results(translation)
 

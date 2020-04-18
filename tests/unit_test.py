@@ -19,11 +19,11 @@ def test_constructor():
 
 
 @pytest.mark.parametrize('user_input,expected', [
-                          (['term_checker.py', 'file.txt', 'file.tmx'], True),
+                          (['term_checker.py', 'file.tmx', 'file.txt'], True),
                           (['term_checker.py'], False),
                           (['term_checker.py', 'file.txt'], False),
                           (['term_checker.py', 'file.tmx'], False),
-                          (['term_checker.py', 'file.tmx', 'file.txt'], False),
+                          (['term_checker.py', 'file.txt', 'file.tmx'], False),
                           (['term_checker.py', 'file.txt', 'file.tmx', 'file.tmx'], False)
                           ])
 def test_user_input_check(user_input, expected):
@@ -193,4 +193,45 @@ def test_get_translation():
 
 
 def test_check_translation():
-    pass
+    expected = [('[図1]...を示す断面模式図である。',
+                 'Fig. 1 is a schematic view depicting ...',
+                 {'断面模式図': ['cross-sectional schematic view']}),
+                ('[図2]...を説明する図である。',
+                 'Fig. 2 is a drawing illustrating ...',
+                 {}),
+                ('[図3]...を示す断面模式図である。',
+                 'Fig. 3 is a cross-sectional schematic view depicting ...',
+                 {}),
+                ('[図4]...を説明する図である。',
+                 'Fig. 4 is a drawing illustrating ...',
+                 {}),
+                ('[図5]...を示す図である。',
+                 'Fig. 5 is a drawing depicting ...',
+                 {}),
+                ('[図6]...を示す図である。',
+                 'Fig. 6 is a drawing depicting ...',
+                 {}),
+                ('[図7]...を示す平面模式図である。',
+                 'Fig. 7 is a plan schematic depicting ...',
+                 {'平面模式図': ['plan schematic view']})]
+
+    # Build translation
+    translation = term_checker.get_translation(TRANSLATION_FILE)
+
+    # Build terminology
+    terminology = term_checker.get_terminology(GLOSSARY_FILE)
+    terminology = term_checker.clean_lines(terminology)
+    terminology = term_checker.format_check(terminology)
+    terminology = term_checker.remove_duplicates(terminology)
+    terminology = term_checker.group_terminology(terminology)
+
+    # Check translation
+    translation = term_checker.check_translation(terminology, translation)
+
+    # Extract content from Segment objects for assert comparison
+    readable_translation = []
+    for segment in translation:
+        readable_translation.append((segment.source_text, segment.target_text,
+                                     segment.missing_terms))
+
+    assert readable_translation == expected
