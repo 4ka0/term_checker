@@ -229,3 +229,15 @@ def test_check_translation():
         output.append((seg.source_text, seg.target_text, seg.missing_terms))
 
     assert output == expected
+
+
+def test_output():
+    '''
+
+    Refactor output function to build output string and then simply print
+    this string once at the end? Might make it easier to test the string
+    content using assert.
+
+    https://stackoverflow.com/questions/33767627/python-write-unittest-for-console-print
+    '''
+    pass
