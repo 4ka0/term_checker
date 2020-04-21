@@ -89,6 +89,7 @@ def get_translation(translation_file):
             tmx_file = tmxfile(file)
     except FileNotFoundError as fnf_error:
         print(fnf_error)
+        sys.exit()
     else:
         translation = []  # List of Segment objects
 
@@ -110,6 +111,7 @@ def get_terminology(glossary_file):
             terminology = f.readlines()
     except FileNotFoundError as fnf_error:
         print(fnf_error)
+        sys.exit()
     else:
         return terminology
 

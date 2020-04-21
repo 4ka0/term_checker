@@ -14,7 +14,7 @@ TRANSLATION_FILE = 'tests/test_translation.tmx'
 def test_constructor():
     s = Segment('なお、正孔輸送層12は、NiO、（またはMoO3）等の無機材料を...',
                 'Moreover, the positive  hole transport layers 12 may...',
-                {})
+                {}, {})
     assert isinstance(s, Segment)
 
 
@@ -229,3 +229,7 @@ def test_check_translation():
         output.append((seg.source_text, seg.target_text, seg.missing_terms))
 
     assert output == expected
+
+
+def test_check_hyphenated():
+    pass
