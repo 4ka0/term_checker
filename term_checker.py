@@ -31,10 +31,15 @@ class Segment():
     Used to create objects for each source-target segment extracted
     from a tmx file.
     '''
-    def __init__(self, source_text, target_text, missing_terms):
-        self.source_text = source_text  # string
-        self.target_text = target_text  # string
-        self.missing_terms = missing_terms  # dict
+    def __init__(self,
+                 source_text,  # string
+                 target_text,  # string
+                 missing_terms,  # dict
+                 hyphenated_forms):  # dict
+        self.source_text = source_text
+        self.target_text = target_text
+        self.missing_terms = missing_terms
+        self.hyphenated_forms = hyphenated_forms
 
 
 def user_input_check(user_input):
@@ -90,8 +95,7 @@ def get_translation(translation_file):
         for node in tmx_file.unit_iter():
             source_text = node.source
             target_text = node.target
-            # {} below is 'missing_terms'
-            segment = Segment(source_text, target_text, {})
+            segment = Segment(source_text, target_text, {}, {})
             translation.append(segment)
 
         return translation
@@ -221,6 +225,26 @@ def contains_content(segment):
     return False
 
 
+def check_hyphenated(terminology, translation):
+    '''
+    Function to check if hyphenated forms of missing terms appear in the
+    translation.
+    '''
+    for segment in translation:
+        if segment.missing_terms:
+            for source_term in segment.missing_terms:
+                # Iterate through each value for the source_term
+                for target_term in segment.missing_terms[source_term]:
+                    # If the target_term consists of 2 or more words
+                    if len(target_term.split()) > 1:
+                        hyphenated = target_term.replace(' ', '-')
+                        # If the hyphenated form appears in the target text
+                        if hyphenated in segment.target_text:
+                            segment.hyphenated_forms[source_term] = hyphenated
+
+    return translation
+
+
 def output_results(translation):
     '''
     Function for outputting results to the terminal.
@@ -231,27 +255,32 @@ def output_results(translation):
         if segment.missing_terms:
 
             errors_found = True
-            print('\n')
 
-            for source in segment.missing_terms:
-                print(Fore.RED + '\'' + source + '\' should be translated as',
-                      end=' ')
+            for source_term in segment.missing_terms:
+                print(Fore.RED + '\n\'' + source_term +
+                      '\' should be translated as', end=' ')
 
                 # Get the number of target terms.
-                target_num = len(segment.missing_terms[source])
+                target_num = len(segment.missing_terms[source_term])
                 counter = 0
 
-                for target in segment.missing_terms[source]:
+                for target_term in segment.missing_terms[source_term]:
                     counter += 1
                     # Second to last element.
                     if counter == target_num - 1:
-                        print('\'' + target + '\'', end=', or ')
+                        print('\'' + target_term + '\'', end=', or ')
                     # Last element.
                     elif counter == target_num:
-                        print('\'' + target + '\'', end=' ')
+                        print('\'' + target_term + '\'', end=' ')
                     # Any other element.
                     else:
-                        print('\'' + target + '\'', end=', ')
+                        print('\'' + target_term + '\'', end=', ')
+
+                # Print hyphenated form if present
+                if segment.hyphenated_forms:
+                    print(Fore.RED + '(although \'' +
+                          segment.hyphenated_forms[source_term] +
+                          '\' appears in the target text)', end=' ')
 
             print(Fore.CYAN + '\nSource text:')
             print(Fore.RESET + segment.source_text)
@@ -272,6 +301,7 @@ def main():
         terminology = remove_duplicates(terminology)
         terminology = group_terminology(terminology)
         translation = check_translation(terminology, translation)
+        translation = check_hyphenated(terminology, translation)
         output_results(translation)
 
 
