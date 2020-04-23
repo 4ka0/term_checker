@@ -9,7 +9,7 @@ from ..term_checker import Segment
 
 
 GLOSSARY_FILE = 'tests/test_glossary.txt'
-TRANSLATION_FILE = 'tests/test_translation.tmx'
+TRANSLATION_FILE = 'tests/test_translation_1.tmx'
 
 
 def test_all():

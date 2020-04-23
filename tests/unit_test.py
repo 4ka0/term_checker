@@ -8,7 +8,8 @@ from ..term_checker import Segment
 
 
 GLOSSARY_FILE = 'tests/test_glossary.txt'
-TRANSLATION_FILE = 'tests/test_translation.tmx'
+TRANSLATION_FILE_1 = 'tests/test_translation_1.tmx'
+TRANSLATION_FILE_2 = 'tests/test_translation_2.tmx'
 
 
 def test_constructor():
@@ -31,6 +32,7 @@ def test_user_input_check(user_input, expected):
 
 
 def test_get_terminology():
+
     expected = ['*技術分野	Technical Field\n',
                 '*背景技術	Related Art\n',
                 '*発明の概要	Summary\n',
@@ -55,11 +57,14 @@ def test_get_terminology():
                 '*特許	patent	patent\n',
                 '*断面模式図	cross-sectional schematic view\n',
                 '*平面模式図	plan schematic view']
+
     terminology = term_checker.get_terminology(GLOSSARY_FILE)
+
     assert terminology == expected
 
 
 def test_clean_lines():
+
     input = [' 技術分野	Technical Field  \n',
              '  背景技術	Related Art  \n',
              '   発明の概要	Summary \n',
@@ -70,6 +75,7 @@ def test_clean_lines():
              '*発明を実施するための形態	Detailed Description   \n',
              '*特許請求の範囲	What is Claimed is:	\n',
              '*特許請求の範囲	patent claims	\n']
+
     expected = ['技術分野	Technical Field',
                 '背景技術	Related Art',
                 '発明の概要	Summary',
@@ -80,11 +86,14 @@ def test_clean_lines():
                 '発明を実施するための形態	Detailed Description',
                 '特許請求の範囲	What is Claimed is:',
                 '特許請求の範囲	patent claims']
+
     output = term_checker.clean_lines(input)
+
     assert output == expected
 
 
 def test_format_check():
+
     input = ['技術分野	Technical Field',
              '背景技術	Related Art',
              '発明の概要	Summary',
@@ -95,16 +104,20 @@ def test_format_check():
              '発明を実施するための形態,Detailed Description',
              '特許請求の範囲	What is Claimed is:	patent claims',
              '特許請求の範囲/patent claims/claims']
+
     expected = ['技術分野	Technical Field',
                 '背景技術	Related Art',
                 '発明の概要	Summary',
                 '発明の概要	Summary',
                 '課題	Problem']
+
     ouput = term_checker.format_check(input)
+
     assert ouput == expected
 
 
 def test_remove_duplicates():
+
     input = ['技術分野	Technical Field',
              '背景技術	Related Art',
              '発明の概要	Summary',
@@ -117,6 +130,7 @@ def test_remove_duplicates():
              '発明を実施するための形態	Detailed Description',
              '特許請求の範囲	What is Claimed is:',
              '特許請求の範囲	patent claims']
+
     expected = ['技術分野	Technical Field',
                 '背景技術	Related Art',
                 '発明の概要	Summary',
@@ -126,11 +140,14 @@ def test_remove_duplicates():
                 '発明を実施するための形態	Detailed Description',
                 '特許請求の範囲	What is Claimed is:',
                 '特許請求の範囲	patent claims']
+
     output = term_checker.remove_duplicates(input)
+
     assert output == expected
 
 
 def test_group_terminology():
+
     input = ['技術分野	Technical Field',
              '発明の概要	Summary',
              '特許請求の範囲	What is Claimed is:',
@@ -149,6 +166,7 @@ def test_group_terminology():
              'つまり	specifically',
              '断面模式図	cross-sectional schematic view',
              '平面模式図	plan schematic view']
+
     expected = {'技術分野': ['Technical Field'],
                 '発明の概要': ['Summary'],
                 '特許請求の範囲': ['What is Claimed is:', 'patent claims'],
@@ -160,11 +178,14 @@ def test_group_terminology():
                 'つまり': ['that is', 'in other words', 'namely', 'specifically'],
                 '断面模式図': ['cross-sectional schematic view'],
                 '平面模式図': ['plan schematic view']}
+
     output = term_checker.group_terminology(input)
+
     assert output == expected
 
 
 def test_get_translation():
+
     expected = [('[図1]...を示す断面模式図である。',
                  'Fig. 1 is a schematic view depicting ...'),
                 ('[図2]...を説明する図である。',
@@ -179,14 +200,18 @@ def test_get_translation():
                  'Fig. 6 is a drawing depicting ...'),
                 ('[図7]...を示す平面模式図である。',
                  'Fig. 7 is a plan schematic depicting ...')]
-    segments = term_checker.get_translation(TRANSLATION_FILE)
+
+    segments = term_checker.get_translation(TRANSLATION_FILE_1)
+
     output = []
     for segment in segments:
         output.append((segment.source_text, segment.target_text))
+
     assert output == expected
 
 
 def test_check_translation():
+
     terminology = {'技術分野': ['Technical Field'],
                    '発明の概要': ['Summary'],
                    '特許請求の範囲': ['What is Claimed is:', 'patent claims'],
@@ -197,6 +222,7 @@ def test_check_translation():
                    '装置': ['device', 'apparatus'],
                    '断面模式図': ['cross-sectional schematic view'],
                    '平面模式図': ['plan schematic view']}
+
     expected = [('[図1]...を示す断面模式図である。',
                  'Fig. 1 is a schematic view depicting ...',
                  {'断面模式図': ['cross-sectional schematic view']}),
@@ -219,8 +245,7 @@ def test_check_translation():
                  'Fig. 7 is a plan schematic depicting ...',
                  {'平面模式図': ['plan schematic view']})]
 
-    # Get and check translation
-    translation = term_checker.get_translation(TRANSLATION_FILE)
+    translation = term_checker.get_translation(TRANSLATION_FILE_1)
     checked_trans = term_checker.check_translation(terminology, translation)
 
     # Extract content from Segment objects for assertion comparison
@@ -232,4 +257,50 @@ def test_check_translation():
 
 
 def test_check_hyphenated():
-    pass
+
+    terminology = {'技術分野': ['Technical Field'],
+                   '発明の概要': ['Summary'],
+                   '特許請求の範囲': ['What is Claimed is:'],
+                   '要約書': ['Abstract'],
+                   '実施形態': ['exemplary embodiment'],
+                   '解決': ['address'],
+                   '装置': ['device'],
+                   '印刷装置': ['printing device'],
+                   '撮影装置': ['photography device']}
+
+    expected = [('技術分野',
+                 'Technical-Field',
+                 {'技術分野': ['Technical Field']},
+                 {'技術分野': 'Technical-Field'}),
+                ('発明の概要',
+                 'Summary',
+                 {}, {}),
+                ('特許請求の範囲',
+                 'What is Claimed is:',
+                 {}, {}),
+                ('要約書',
+                 'Abstract',
+                 {}, {}),
+                ('実施形態',
+                 'Another exemplary-embodiment.',
+                 {'実施形態': ['exemplary embodiment']},
+                 {'実施形態': 'exemplary-embodiment'}),
+                ('解決',
+                 'Address',
+                 {}, {}),
+                ('印刷装置',
+                 'A printing-device.',
+                 {'印刷装置': ['printing device']},
+                 {'印刷装置': 'printing-device'})]
+
+    raw_trans = term_checker.get_translation(TRANSLATION_FILE_2)
+    checked_trans = term_checker.check_translation(terminology, raw_trans)
+    rechecked_trans = term_checker.check_hyphenated(terminology, checked_trans)
+
+    # Extract content from Segment objects for assertion comparison
+    output = []
+    for seg in rechecked_trans:
+        output.append((seg.source_text, seg.target_text,
+                       seg.missing_terms, seg.hyphenated_forms))
+
+    assert output == expected

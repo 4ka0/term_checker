@@ -34,8 +34,8 @@ class Segment():
     def __init__(self,
                  source_text,  # string
                  target_text,  # string
-                 missing_terms,  # dict
-                 hyphenated_forms):  # dict
+                 missing_terms,  # dict {string: list of strings}
+                 hyphenated_forms):  # dict {string: string}
         self.source_text = source_text
         self.target_text = target_text
         self.missing_terms = missing_terms
