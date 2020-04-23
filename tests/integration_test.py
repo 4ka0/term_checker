@@ -8,7 +8,7 @@ from .. import term_checker
 from ..term_checker import Segment
 
 
-GLOSSARY_FILE = 'tests/test_glossary.txt'
+GLOSSARY_FILE = 'tests/test_glossary_1.txt'
 TRANSLATION_FILE = 'tests/test_translation_1.tmx'
 
 

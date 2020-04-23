@@ -7,7 +7,8 @@ from .. import term_checker
 from ..term_checker import Segment
 
 
-GLOSSARY_FILE = 'tests/test_glossary.txt'
+GLOSSARY_FILE_1 = 'tests/test_glossary_1.txt'
+GLOSSARY_FILE_2 = 'tests/test_glossary_2.txt'
 TRANSLATION_FILE_1 = 'tests/test_translation_1.tmx'
 TRANSLATION_FILE_2 = 'tests/test_translation_2.tmx'
 
@@ -58,7 +59,7 @@ def test_get_terminology():
                 '*断面模式図	cross-sectional schematic view\n',
                 '*平面模式図	plan schematic view']
 
-    terminology = term_checker.get_terminology(GLOSSARY_FILE)
+    terminology = term_checker.get_terminology(GLOSSARY_FILE_1)
 
     assert terminology == expected
 
