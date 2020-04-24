@@ -1,6 +1,6 @@
 # Term checker
 
-Script to check whether correct terminology is being used in a translation (tmx file).
+A command line script to check whether correct terminology is being used in a translation (tmx file).
 
 Terminology is assumed to be listed in a tab-delimited text file in the following format:
 ```
@@ -14,9 +14,13 @@ source_term <tab> target_term_2
 source_term <tab> target_term_3
 ```
 
+### Installation
+
+Download **term_checker.py** from here and place in any directory of your choosing.
+
 ### Running the script
 
-From the terminal:
+From the directory containing this script, terminal:
 ```
 python3 term_checker.py translation.tmx glossary.txt
 ```
@@ -24,9 +28,9 @@ python3 term_checker.py translation.tmx glossary.txt
 ### Prerequisites
 
 * python 3
-* colorama 0.4.3
-* translate-toolkit 2.5.0
-* pytest 5.4.1
+* [colorama 0.4.3](https://pypi.org/project/colorama/)
+* [translate-toolkit 2.5.0](https://pypi.org/project/translate-toolkit/)
+* [pytest 5.4.1](https://docs.pytest.org/en/latest/getting-started.html) (only for running the tests)
 
 ### Built using:
 
