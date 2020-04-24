@@ -4,7 +4,7 @@ Script to check whether correct terminology is being used in a translation (tmx 
 
 Terminology is assumed to be listed in a tab-delimited text file in the following format:
 ```
-source_term <tab> target_term
+source_term __<tab>__ target_term
 ```
 
 If multiple target terms exist for a given source term, it is assumed that these are entered on separate lines rather than all on the same line, e.g.:
