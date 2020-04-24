@@ -40,4 +40,4 @@ python3 term_checker.py translation.tmx glossary.txt
 
 ### License
 
-This project is licensed under the MIT License.
+Licensed under the MIT License.
