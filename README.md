@@ -27,13 +27,14 @@ python3 term_checker.py translation.tmx glossary.txt
 
 ### Prerequisites
 
-* python 3
+* Python 3
 * [colorama 0.4.3](https://pypi.org/project/colorama/)
 * [translate-toolkit 2.5.0](https://pypi.org/project/translate-toolkit/)
 * [pytest 5.4.1](https://docs.pytest.org/en/latest/getting-started.html) (only for running the tests)
 
 ### Built using:
 
+* Python 3.7.6
 * Visual Studio Code 1.44.2
 * macOS 10.14.6
 
