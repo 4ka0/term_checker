@@ -30,7 +30,7 @@ python3 term_checker.py translation.tmx glossary.txt
 
 ### Built using:
 
-* Visual Studio Code
+* Visual Studio Code 1.44.2
 * macOS 10.14.6
 
 ### License
