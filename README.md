@@ -14,6 +14,8 @@ source_term <tab> target_term_2
 source_term <tab> target_term_3
 ```
 
+Takes into account whether target terms appear in a hyphenated form. For example, in the case of a Japanese to English translation, "old model" and "old-model" are accepted as translations for "旧機種".
+
 ### Installation
 
 Download **term_checker.py** from here and place in any directory of your choosing.
