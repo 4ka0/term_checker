@@ -294,16 +294,37 @@ def output_results(translation):
 
 
 def main():
+    # Check user input
     user_input = sys.argv
     if user_input_check(user_input):
+
+        # Obtain translation
         translation = get_translation(user_input[1])
+
+        # Obtain terminology
         terminology = get_terminology(user_input[2])
         terminology = clean_lines(terminology)
         terminology = format_check(terminology)
         terminology = remove_duplicates(terminology)
         terminology = group_terminology(terminology)
+
+        # Identify part of speech
+        '''
+        1) Get source term from glossary
+        2) Run tagger on source term
+
+        '''
+
+        # Check translation
+        '''
+        3) If source term is noun > Use simple search, i.e. ”is source term in text”
+        4) Else > use English lemmatiser and search for word taking inflected forms into account
+        '''
+
         translation = check_translation(terminology, translation)
         translation = check_hyphenated(terminology, translation)
+
+        # Display results
         output_results(translation)
 
 
