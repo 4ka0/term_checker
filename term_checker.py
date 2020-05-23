@@ -22,6 +22,7 @@ To execute:
 
 import sys
 
+import spacy
 from colorama import Fore
 from translate.storage.tmx import tmxfile
 
@@ -183,12 +184,8 @@ def group_terminology(terminology):
 
     return grouped_terminology
 
-
+'''
 def check_translation(terminology, translation):
-    '''
-    Function for checking that terminology has been translated in the correct
-    way in the translation according to the user-specified terminology.
-    '''
 
     for segment in translation:
 
@@ -197,19 +194,102 @@ def check_translation(terminology, translation):
 
             # Check if any source terminology is in the source text.
             for entry in terminology:
-            # 'source_term' here refers to keys in the terminology dict.
                 if entry in segment.source_text:
 
                     # Case-insensitive comparison to find target terms
                     text = segment.target_text.lower()
                     terms = [x.lower() for x in terminology[entry]]
 
-                    # Check if any corresponding target term appears
-                    # in the target text.
+                    # Check if any of the corresponding target terms
+                    # appear in the target text.
                     found = any(elem in text for elem in terms)
 
                     if not found:
                         segment.missing_terms[entry] = terminology[entry]
+
+    return translation
+'''
+
+def check_translation(terminology, translation):
+    '''
+    Function for checking that terminology has been translated in the correct
+    way in the translation according to the user-specified terminology.
+    '''
+
+    # Load English model (small version with unnecessary parts disabled)
+    nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
+
+    '''
+    LOGIC
+
+    vocab term = 'image forming device'
+    target text includes = 'image forming devices'
+
+    want to check if 'image forming device_lemma' appears in target text
+    therefore only need to get lemma of last word in string, in this case 'device'
+    then build new string consisting of 'image'+'forming'+'device_lemma'
+
+    '''
+
+    for segment in translation:
+
+        # Only proceed if there is actual source and target text.
+        if contains_content(segment):
+
+            print('\n')
+
+            # Check if any source terminology is in the source text.
+
+            for source_term in terminology:
+                print(source_term)
+
+                if source_term in segment.source_text:
+                    print(source_term + ' found in source text')
+
+                    # Flag indicating whether corresponding target term is
+                    # found in the target text
+                    found = False
+
+                    # Look at each target term corresponding to the source term
+                    for target in terminology[source_term]:
+                        print('target term = ' + target)
+
+                        # Get the lemma for the end word of the target term
+                        subwords = target.split()
+                        end_word = subwords[-1]
+                        doc = nlp(end_word)
+                        end_word_lemma = doc[0].lemma_
+                        print('end_word_lemma = ' + end_word_lemma)
+
+                        # Rebuild target term with the end word being replaced
+                        # with the end word lemma
+                        if len(subwords) > 1:
+                            target_term = ''
+                            for i in range(len(subwords) - 1):
+                                target_term = target_term + ' ' + subwords[i]
+                            target_term = target_term + ' ' + end_word_lemma
+                        else:
+                            target_term = end_word_lemma
+                        print('target_term = ' + target_term)
+
+                        # Get the lemma for each word in the target text and
+                        # check whether matches end_word_lemma
+
+                        # This will only find 'device' and won't find 'image forming device'
+                        # First look for matching lemma and then go backwards?
+
+                        doc = nlp(segment.target_text)
+                        for token in doc:
+
+                            if token.lemma_.lower() == end_word_lemma.lower():
+                                print('token.lemma_ matches end_word_lemma')
+
+                                # Go backwards and get previous words to see if matches target term
+
+
+                        if not found:
+                            segment.missing_terms[source_term] = terminology[source_term]
+                            print('target term not found')
 
     return translation
 
@@ -301,24 +381,17 @@ def main():
         # Obtain translation
         translation = get_translation(user_input[1])
 
-        # Obtain terminology
+        # Obtain and organize terminology
         terminology = get_terminology(user_input[2])
         terminology = clean_lines(terminology)
         terminology = format_check(terminology)
         terminology = remove_duplicates(terminology)
         terminology = group_terminology(terminology)
 
-        # Identify part of speech
-        '''
-        1) Get source term from glossary
-        2) Run tagger on source term
-
-        '''
-
         # Check translation
         '''
-        3) If source term is noun > Use simple search, i.e. ”is source term in text”
-        4) Else > use English lemmatiser and search for word taking inflected forms into account
+        Use English lemmatiser and search for word taking inflected forms into account
+        Need to know the POS before running the lemmatizer.
         '''
 
         translation = check_translation(terminology, translation)
