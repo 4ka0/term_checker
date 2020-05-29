@@ -210,6 +210,7 @@ def check_translation(terminology, translation):
     return translation
 '''
 
+
 def check_translation(terminology, translation):
     '''
     Function for checking that terminology has been translated in the correct
@@ -225,10 +226,11 @@ def check_translation(terminology, translation):
     vocab term = 'image forming device'
     target text includes = 'image forming devices'
 
-    want to check if 'image forming device_lemma' appears in target text
-    therefore only need to get lemma of last word in string, in this case 'device'
-    then build new string consisting of 'image'+'forming'+'device_lemma'
-
+    Want to check if 'image forming device_lemma' appears in the target text.
+    Therefore,
+    - replace last word in search string with lemma for that word
+    - see if lemma for last word in target text
+    - if found, go backwards and see if whole matching string found
     '''
 
     for segment in translation:
@@ -239,9 +241,8 @@ def check_translation(terminology, translation):
             print('\n')
 
             # Check if any source terminology is in the source text.
-
             for source_term in terminology:
-                print(source_term)
+                # print(source_term)
 
                 if source_term in segment.source_text:
                     print(source_term + ' found in source text')
@@ -252,44 +253,55 @@ def check_translation(terminology, translation):
 
                     # Look at each target term corresponding to the source term
                     for target in terminology[source_term]:
-                        print('target term = ' + target)
+                        print('  target term = ' + target)
 
                         # Get the lemma for the end word of the target term
                         subwords = target.split()
+                        subword_no = len(subwords)
                         end_word = subwords[-1]
                         doc = nlp(end_word)
                         end_word_lemma = doc[0].lemma_
-                        print('end_word_lemma = ' + end_word_lemma)
+                        print('  end_word_lemma = ' + end_word_lemma)
 
                         # Rebuild target term with the end word being replaced
                         # with the end word lemma
-                        if len(subwords) > 1:
+                        if subword_no > 1:
                             target_term = ''
-                            for i in range(len(subwords) - 1):
+                            for i in range(subword_no - 1):
                                 target_term = target_term + ' ' + subwords[i]
                             target_term = target_term + ' ' + end_word_lemma
                         else:
                             target_term = end_word_lemma
-                        print('target_term = ' + target_term)
+                        print('  target_term = ' + target_term)
 
                         # Get the lemma for each word in the target text and
                         # check whether matches end_word_lemma
 
-                        # This will only find 'device' and won't find 'image forming device'
-                        # First look for matching lemma and then go backwards?
-
                         doc = nlp(segment.target_text)
-                        for token in doc:
 
-                            if token.lemma_.lower() == end_word_lemma.lower():
-                                print('token.lemma_ matches end_word_lemma')
+                        for i in range(len(doc)):
 
-                                # Go backwards and get previous words to see if matches target term
+                            if doc[i].lemma_.lower() == end_word_lemma.lower():
+                                print('    doc[i].lemma_ == end_word_lemma')
 
+                                # Get preceding words in target text and build
+                                # found term and compare with target term
 
-                        if not found:
-                            segment.missing_terms[source_term] = terminology[source_term]
-                            print('target term not found')
+                                found_term = ''
+                                if subword_no > 1:
+                                    for j in range(subword_no):
+                                        found_term = doc[i - j].text + ' ' + found_term
+                                else:
+                                    found_term = doc[i].lemma_
+                                print('    found_term = ' + found_term)
+
+                                if found_term.lower() == target_term.lower():
+                                    found = True
+                                    print('      found_term == target_term')
+
+                    if not found:
+                        segment.missing_terms[source_term] = terminology[source_term]
+                        print('  target term not found')
 
     return translation
 
@@ -395,10 +407,10 @@ def main():
         '''
 
         translation = check_translation(terminology, translation)
-        translation = check_hyphenated(terminology, translation)
+        # translation = check_hyphenated(terminology, translation)
 
         # Display results
-        output_results(translation)
+        # output_results(translation)
 
 
 if __name__ == "__main__":
