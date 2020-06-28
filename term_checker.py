@@ -119,8 +119,7 @@ def get_terminology(glossary_file):
 
 def clean_lines(terminology):
     '''
-    Function to clean entries in a terminology list and also to remove
-    duplicate entries. Specifically:
+    Function to clean entries in a terminology list, specifically:
     (1) Removes surrounding whitespace chars from each line (including '\n')
     (2) Removes '*' chars from the start of each line (I have these in some of
         my client glossaries).
@@ -213,97 +212,99 @@ def check_translation(terminology, translation):
 
 def check_translation(terminology, translation):
     '''
-    Function for checking that terminology has been translated in the correct
-    way in the translation according to the user-specified terminology.
+    Function for checking whether the target text in a translation segment
+    contains a correct target term if a source term is found in the source
+    text for that segment.
     '''
 
     # Load English model (small version with unnecessary parts disabled)
     nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
-
-    '''
-    LOGIC
-
-    vocab term = 'image forming device'
-    target text includes = 'image forming devices'
-
-    Want to check if 'image forming device_lemma' appears in the target text.
-    Therefore,
-    - replace last word in search string with lemma for that word
-    - see if lemma for last word in target text
-    - if found, go backwards and see if whole matching string found
-    '''
 
     for segment in translation:
 
         # Only proceed if there is actual source and target text.
         if contains_content(segment):
 
-            print('\n')
-
             # Check if any source terminology is in the source text.
             for source_term in terminology:
-                # print(source_term)
 
                 if source_term in segment.source_text:
-                    print(source_term + ' found in source text')
 
-                    # Flag indicating whether corresponding target term is
-                    # found in the target text
-                    found = False
-
-                    # Look at each target term corresponding to the source term
-                    for target in terminology[source_term]:
-                        print('  target term = ' + target)
+                    # Get lemma version of each target term and see if included
+                    # in target text
+                    for target_term in terminology[source_term]:
 
                         # Get the lemma for the end word of the target term
-                        subwords = target.split()
-                        subword_no = len(subwords)
-                        end_word = subwords[-1]
-                        doc = nlp(end_word)
-                        end_word_lemma = doc[0].lemma_
-                        print('  end_word_lemma = ' + end_word_lemma)
+                        target_term_lemma = get_lemma(target_term, nlp)
 
-                        # Rebuild target term with the end word being replaced
-                        # with the end word lemma
-                        if subword_no > 1:
-                            target_term = ''
-                            for i in range(subword_no - 1):
-                                target_term = target_term + ' ' + subwords[i]
-                            target_term = target_term + ' ' + end_word_lemma
-                        else:
-                            target_term = end_word_lemma
-                        print('  target_term = ' + target_term)
+                        # Check if target_term_lemma appears in target text
+                        found = target_search(target_term_lemma,
+                                              segment.target_text,
+                                              nlp)
 
-                        # Get the lemma for each word in the target text and
-                        # check whether matches end_word_lemma
-
-                        doc = nlp(segment.target_text)
-
-                        for i in range(len(doc)):
-
-                            if doc[i].lemma_.lower() == end_word_lemma.lower():
-                                print('    doc[i].lemma_ == end_word_lemma')
-
-                                # Get preceding words in target text and build
-                                # found term and compare with target term
-
-                                found_term = ''
-                                if subword_no > 1:
-                                    for j in range(subword_no):
-                                        found_term = doc[i - j].text + ' ' + found_term
-                                else:
-                                    found_term = doc[i].lemma_
-                                print('    found_term = ' + found_term)
-
-                                if found_term.lower() == target_term.lower():
-                                    found = True
-                                    print('      found_term == target_term')
-
-                    if not found:
-                        segment.missing_terms[source_term] = terminology[source_term]
-                        print('  target term not found')
+                        if not found:
+                            segment.missing_terms[source_term] = \
+                                terminology[source_term]
 
     return translation
+
+
+def get_lemma(input_string, nlp):
+    '''
+    Function to return the lemma version of an input string.
+    A lemma version being:
+       - for a single-word string, the lemma of that single word
+       - for a multi-word string, the same string except that the end word
+            is in its lemma form
+    '''
+
+    # Get end word lemma, regardless of the number of words
+    subwords = input_string.split()
+    end_word = subwords[-1]
+    doc = nlp(end_word)
+    end_word_lemma = doc[0].lemma_
+
+    # If the input string contains more than one word, rebuild the input string
+    # with the end word being replaced with its lemma form
+    # subword_no = len(subwords)
+    if len(subwords) > 1:
+        split_words = input_string.rsplit(' ', 1)
+        lemma_form = split_words[0] + ' ' + end_word_lemma
+    else:
+        lemma_form = end_word_lemma
+
+    return lemma_form
+
+# NEXT, TEST THIS FUNCTION MORE THOROUGHLY
+
+def target_search(target_term_lemma, target_text, nlp):
+    '''
+    Function to check whether the lemma version of a target term appears in
+    the target text of a given translation segment.
+    '''
+    found = False
+    doc = nlp(target_text)
+    subwords = target_term_lemma.split()
+    subword_no = len(subwords)
+    end_lemma = subwords[-1]
+
+    for i in range(len(doc)):
+
+        # Look for a lemma that matches the end target term lemma
+        if doc[i].lemma_.lower() == end_lemma.lower():
+
+            found_term = doc[i].lemma_
+
+            # If necessary, get the preceding words to build the whole term
+            if subword_no > 1:
+                for j in range(1, subword_no):
+                    found_term = doc[i - j].text + ' ' + found_term
+
+            # Compare found term with target term
+            if found_term.lower() == target_term_lemma.lower():
+                found = True
+
+    return found
 
 
 def contains_content(segment):
@@ -410,7 +411,7 @@ def main():
         # translation = check_hyphenated(terminology, translation)
 
         # Display results
-        # output_results(translation)
+        output_results(translation)
 
 
 if __name__ == "__main__":

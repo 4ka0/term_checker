@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+import spacy
 
 from .. import term_checker
 from ..term_checker import Segment
@@ -255,6 +256,26 @@ def test_check_translation():
         output.append((seg.source_text, seg.target_text, seg.missing_terms))
 
     assert output == expected
+
+
+@pytest.mark.parametrize('user_input,expected', [
+                          ('device', 'device'),
+                          ('devices', 'device'),
+                          ('printing devices', 'printing device'),
+                          ('information processing devices', 'information processing device'),
+                          ('exemplary embodiments', 'exemplary embodiment')
+                          ])
+def test_get_lemma(user_input, expected):
+    nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
+    assert term_checker.get_lemma(user_input, nlp) == expected
+
+
+def test_target_search():
+    nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
+    target_term_lemma = 'information processing device'
+    target_text = 'The information processing devices 10B receive the request, and then store the functional information related to the function 2 in the storage unit and validates display of the function 2.'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert found
 
 
 def test_check_hyphenated():
