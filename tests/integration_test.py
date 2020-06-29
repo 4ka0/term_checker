@@ -11,6 +11,8 @@ from ..term_checker import Segment
 GLOSSARY_FILE = 'tests/test_glossary_1.txt'
 TRANSLATION_FILE = 'tests/test_translation_1.tmx'
 
+nlp = term_checker.setup_tokenizer()
+
 
 def test_all():
     expected = [('[図1]...を示す断面模式図である。',
@@ -46,7 +48,7 @@ def test_all():
     terminology = term_checker.group_terminology(terminology)
 
     # Check translation
-    translation = term_checker.check_translation(terminology, translation)
+    translation = term_checker.check_translation(nlp, terminology, translation)
 
     # Extract content from Segment objects for assert comparison
     output = []

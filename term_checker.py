@@ -23,6 +23,8 @@ To execute:
 import sys
 
 import spacy
+from spacy.tokenizer import Tokenizer
+from spacy.util import compile_infix_regex
 from colorama import Fore
 from translate.storage.tmx import tmxfile
 
@@ -210,7 +212,35 @@ def check_translation(terminology, translation):
 '''
 
 
-def check_translation(terminology, translation):
+def setup_tokenizer():
+    '''
+    Function to set up a tokenizer with specific rules to not split words or
+    numbers that include hyphens.
+    '''
+    nlp = spacy.load('en_core_web_sm')
+    # Default infixes
+    inf = list(nlp.Defaults.infixes)
+    # Remove the generic op between numbers or between a number and a -
+    inf.remove(r"(?<=[0-9])[+\-\*^](?=[0-9-])")
+    # Convert inf to tuple
+    inf = tuple(inf)
+    # Add the removed rule after subtracting (?<=[0-9])-(?=[0-9]) pattern
+    infixes = inf + tuple([r"(?<=[0-9])[+*^](?=[0-9-])", r"(?<=[0-9])-(?=-)"])
+    # Remove - between letters rule
+    infixes = [x for x in infixes if '-|–|—|--|---|——|~' not in x]
+    infix_re = compile_infix_regex(infixes)
+
+    nlp.tokenizer =  Tokenizer(nlp.vocab, prefix_search=nlp.tokenizer.prefix_search,
+                                suffix_search=nlp.tokenizer.suffix_search,
+                                infix_finditer=infix_re.finditer,
+                                token_match=nlp.tokenizer.token_match,
+                                rules=nlp.Defaults.tokenizer_exceptions)
+
+    # nlp.tokenizer = custom_tokenizer(nlp)
+    return nlp
+
+
+def check_translation(nlp, terminology, translation):
     '''
     Function for checking whether the target text in a translation segment
     contains a correct target term if a source term is found in the source
@@ -218,7 +248,7 @@ def check_translation(terminology, translation):
     '''
 
     # Load English model (small version with unnecessary parts disabled)
-    nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
+    # nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
 
     for segment in translation:
 
@@ -230,11 +260,11 @@ def check_translation(terminology, translation):
 
                 if source_term in segment.source_text:
 
-                    # Get lemma version of each target term and see if included
-                    # in target text
+                    # Get lemma version of each corresponding target term and
+                    # see if included in target text
                     for target_term in terminology[source_term]:
 
-                        # Get the lemma for the end word of the target term
+                        # Get the lemma form of the target term
                         target_term_lemma = get_lemma(target_term, nlp)
 
                         # Check if target_term_lemma appears in target text
@@ -243,8 +273,7 @@ def check_translation(terminology, translation):
                                               nlp)
 
                         if not found:
-                            segment.missing_terms[source_term] = \
-                                terminology[source_term]
+                            segment.missing_terms[source_term] = terminology[source_term]
 
     return translation
 
@@ -260,9 +289,8 @@ def get_lemma(input_string, nlp):
 
     # Get end word lemma, regardless of the number of words
     subwords = input_string.split()
-    end_word = subwords[-1]
-    doc = nlp(end_word)
-    end_word_lemma = doc[0].lemma_
+    doc = nlp(input_string)
+    end_word_lemma = doc[-1].lemma_
 
     # If the input string contains more than one word, rebuild the input string
     # with the end word being replaced with its lemma form
@@ -281,16 +309,17 @@ def target_search(target_term_lemma, target_text, nlp):
     Function to check whether the lemma version of a target term appears in
     the target text of a given translation segment.
     '''
+
     found = False
     doc = nlp(target_text)
     subwords = target_term_lemma.split()
     subword_no = len(subwords)
-    end_lemma = subwords[-1]
+    target_end_lemma = subwords[-1]
 
     for i in range(len(doc)):
 
         # Look for a lemma that matches the end target term lemma
-        if doc[i].lemma_.lower() == end_lemma.lower():
+        if doc[i].lemma_.lower() == target_end_lemma.lower():
 
             found_term = doc[i].lemma_
 
@@ -322,12 +351,12 @@ def contains_content(segment):
 def check_hyphenated(terminology, translation):
     '''
     Function to check if hyphenated forms of missing terms appear in the
-    translation.
+    target text. If the hyphenated form is found in the target text, this
+    is not treated as an error, but rather a message indicating this is output.
     '''
     for segment in translation:
         if segment.missing_terms:
             for source_term in segment.missing_terms:
-                # Iterate through each value for the source_term
                 for target_term in segment.missing_terms[source_term]:
                     # If the target_term consists of 2 or more words
                     if len(target_term.split()) > 1:
@@ -390,7 +419,7 @@ def main():
     user_input = sys.argv
     if user_input_check(user_input):
 
-        # Obtain translation
+        # Obtain translatio
         translation = get_translation(user_input[1])
 
         # Obtain and organize terminology
@@ -401,13 +430,9 @@ def main():
         terminology = group_terminology(terminology)
 
         # Check translation
-        '''
-        Use English lemmatiser and search for word taking inflected forms into account
-        Need to know the POS before running the lemmatizer.
-        '''
-
-        translation = check_translation(terminology, translation)
-        # translation = check_hyphenated(terminology, translation)
+        nlp = setup_tokenizer()
+        translation = check_translation(nlp, terminology, translation)
+        translation = check_hyphenated(terminology, translation)
 
         # Display results
         output_results(translation)

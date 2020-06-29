@@ -13,7 +13,7 @@ GLOSSARY_FILE_2 = 'tests/test_glossary_2.txt'
 TRANSLATION_FILE_1 = 'tests/test_translation_1.tmx'
 TRANSLATION_FILE_2 = 'tests/test_translation_2.tmx'
 
-nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
+nlp = term_checker.setup_tokenizer()
 
 
 def test_constructor():
@@ -224,7 +224,8 @@ def test_check_translation():
                  'Fig. 7 is a plan schematic depicting ...',
                  {'平面模式図': ['plan schematic view']})]
     translation = term_checker.get_translation(TRANSLATION_FILE_1)
-    checked_trans = term_checker.check_translation(terminology, translation)
+    nlp = term_checker.setup_tokenizer()
+    checked_trans = term_checker.check_translation(nlp, terminology, translation)
     # Extract content from Segment objects for assertion comparison
     output = []
     for seg in checked_trans:
@@ -237,7 +238,8 @@ def test_check_translation():
                           ('devices', 'device'),
                           ('printing devices', 'printing device'),
                           ('information processing devices', 'information processing device'),
-                          ('exemplary embodiments', 'exemplary embodiment')
+                          ('exemplary embodiments', 'exemplary embodiment'),
+                          ('cross-sectional views', 'cross-sectional view')
                           ])
 def test_get_lemma(user_input, expected):
     assert term_checker.get_lemma(user_input, nlp) == expected
@@ -255,8 +257,8 @@ def test_target_search():
     found = term_checker.target_search(target_term_lemma, target_text, nlp)
     assert found
     # Test 3 - positive
-    target_term_lemma = 'polarization imaging device'
-    target_text = 'Fig. 49A is a drawing depicting a polarization imaging device in embodiment 10;'
+    target_term_lemma = 'cross-sectional schematic view'
+    target_text = 'Fig. 3 is a cross-sectional schematic view depicting...'
     found = term_checker.target_search(target_term_lemma, target_text, nlp)
     assert found
     # Test 4 - positive
@@ -266,7 +268,7 @@ def test_target_search():
     assert found
     # Test 5 - positive
     target_term_lemma = 'transmit'
-    target_text = 'report transmitting unit'
+    target_text = 'The device is not usually transmitting at this time.'
     found = term_checker.target_search(target_term_lemma, target_text, nlp)
     assert found
     # Test 6 - negative
@@ -306,8 +308,7 @@ def test_check_hyphenated():
                    '装置': ['device'],
                    '印刷装置': ['printing device'],
                    '撮影装置': ['photography device']}
-    expected = [('技術分野',
-                 'Technical-Field',
+    expected = [('技術分野', 'Technical-Field',
                  {'技術分野': ['Technical Field']},
                  {'技術分野': 'Technical-Field'}),
                 ('発明の概要',
@@ -331,7 +332,7 @@ def test_check_hyphenated():
                  {'印刷装置': ['printing device']},
                  {'印刷装置': 'printing-device'})]
     raw_trans = term_checker.get_translation(TRANSLATION_FILE_2)
-    checked_trans = term_checker.check_translation(terminology, raw_trans)
+    checked_trans = term_checker.check_translation(nlp, terminology, raw_trans)
     rechecked_trans = term_checker.check_hyphenated(terminology, checked_trans)
     # Extract content from Segment objects for assertion comparison
     output = []
