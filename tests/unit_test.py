@@ -13,6 +13,8 @@ GLOSSARY_FILE_2 = 'tests/test_glossary_2.txt'
 TRANSLATION_FILE_1 = 'tests/test_translation_1.tmx'
 TRANSLATION_FILE_2 = 'tests/test_translation_2.tmx'
 
+nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
+
 
 def test_constructor():
     s = Segment('なお、正孔輸送層12は、NiO、（またはMoO3）等の無機材料を...',
@@ -34,7 +36,6 @@ def test_user_input_check(user_input, expected):
 
 
 def test_get_terminology():
-
     expected = ['*技術分野	Technical Field\n',
                 '*背景技術	Related Art\n',
                 '*発明の概要	Summary\n',
@@ -59,14 +60,11 @@ def test_get_terminology():
                 '*特許	patent	patent\n',
                 '*断面模式図	cross-sectional schematic view\n',
                 '*平面模式図	plan schematic view']
-
     terminology = term_checker.get_terminology(GLOSSARY_FILE_1)
-
     assert terminology == expected
 
 
 def test_clean_lines():
-
     input = [' 技術分野	Technical Field  \n',
              '  背景技術	Related Art  \n',
              '   発明の概要	Summary \n',
@@ -77,7 +75,6 @@ def test_clean_lines():
              '*発明を実施するための形態	Detailed Description   \n',
              '*特許請求の範囲	What is Claimed is:	\n',
              '*特許請求の範囲	patent claims	\n']
-
     expected = ['技術分野	Technical Field',
                 '背景技術	Related Art',
                 '発明の概要	Summary',
@@ -88,14 +85,11 @@ def test_clean_lines():
                 '発明を実施するための形態	Detailed Description',
                 '特許請求の範囲	What is Claimed is:',
                 '特許請求の範囲	patent claims']
-
     output = term_checker.clean_lines(input)
-
     assert output == expected
 
 
 def test_format_check():
-
     input = ['技術分野	Technical Field',
              '背景技術	Related Art',
              '発明の概要	Summary',
@@ -106,20 +100,16 @@ def test_format_check():
              '発明を実施するための形態,Detailed Description',
              '特許請求の範囲	What is Claimed is:	patent claims',
              '特許請求の範囲/patent claims/claims']
-
     expected = ['技術分野	Technical Field',
                 '背景技術	Related Art',
                 '発明の概要	Summary',
                 '発明の概要	Summary',
                 '課題	Problem']
-
     ouput = term_checker.format_check(input)
-
     assert ouput == expected
 
 
 def test_remove_duplicates():
-
     input = ['技術分野	Technical Field',
              '背景技術	Related Art',
              '発明の概要	Summary',
@@ -132,7 +122,6 @@ def test_remove_duplicates():
              '発明を実施するための形態	Detailed Description',
              '特許請求の範囲	What is Claimed is:',
              '特許請求の範囲	patent claims']
-
     expected = ['技術分野	Technical Field',
                 '背景技術	Related Art',
                 '発明の概要	Summary',
@@ -142,14 +131,11 @@ def test_remove_duplicates():
                 '発明を実施するための形態	Detailed Description',
                 '特許請求の範囲	What is Claimed is:',
                 '特許請求の範囲	patent claims']
-
     output = term_checker.remove_duplicates(input)
-
     assert output == expected
 
 
 def test_group_terminology():
-
     input = ['技術分野	Technical Field',
              '発明の概要	Summary',
              '特許請求の範囲	What is Claimed is:',
@@ -168,7 +154,6 @@ def test_group_terminology():
              'つまり	specifically',
              '断面模式図	cross-sectional schematic view',
              '平面模式図	plan schematic view']
-
     expected = {'技術分野': ['Technical Field'],
                 '発明の概要': ['Summary'],
                 '特許請求の範囲': ['What is Claimed is:', 'patent claims'],
@@ -180,14 +165,11 @@ def test_group_terminology():
                 'つまり': ['that is', 'in other words', 'namely', 'specifically'],
                 '断面模式図': ['cross-sectional schematic view'],
                 '平面模式図': ['plan schematic view']}
-
     output = term_checker.group_terminology(input)
-
     assert output == expected
 
 
 def test_get_translation():
-
     expected = [('[図1]...を示す断面模式図である。',
                  'Fig. 1 is a schematic view depicting ...'),
                 ('[図2]...を説明する図である。',
@@ -202,18 +184,14 @@ def test_get_translation():
                  'Fig. 6 is a drawing depicting ...'),
                 ('[図7]...を示す平面模式図である。',
                  'Fig. 7 is a plan schematic depicting ...')]
-
     segments = term_checker.get_translation(TRANSLATION_FILE_1)
-
     output = []
     for segment in segments:
         output.append((segment.source_text, segment.target_text))
-
     assert output == expected
 
 
 def test_check_translation():
-
     terminology = {'技術分野': ['Technical Field'],
                    '発明の概要': ['Summary'],
                    '特許請求の範囲': ['What is Claimed is:', 'patent claims'],
@@ -224,7 +202,6 @@ def test_check_translation():
                    '装置': ['device', 'apparatus'],
                    '断面模式図': ['cross-sectional schematic view'],
                    '平面模式図': ['plan schematic view']}
-
     expected = [('[図1]...を示す断面模式図である。',
                  'Fig. 1 is a schematic view depicting ...',
                  {'断面模式図': ['cross-sectional schematic view']}),
@@ -246,15 +223,12 @@ def test_check_translation():
                 ('[図7]...を示す平面模式図である。',
                  'Fig. 7 is a plan schematic depicting ...',
                  {'平面模式図': ['plan schematic view']})]
-
     translation = term_checker.get_translation(TRANSLATION_FILE_1)
     checked_trans = term_checker.check_translation(terminology, translation)
-
     # Extract content from Segment objects for assertion comparison
     output = []
     for seg in checked_trans:
         output.append((seg.source_text, seg.target_text, seg.missing_terms))
-
     assert output == expected
 
 
@@ -266,20 +240,63 @@ def test_check_translation():
                           ('exemplary embodiments', 'exemplary embodiment')
                           ])
 def test_get_lemma(user_input, expected):
-    nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
     assert term_checker.get_lemma(user_input, nlp) == expected
 
 
 def test_target_search():
-    nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
+    # Test 1 - positive
     target_term_lemma = 'information processing device'
     target_text = 'The information processing devices 10B receive the request, and then store the functional information related to the function 2 in the storage unit and validates display of the function 2.'
     found = term_checker.target_search(target_term_lemma, target_text, nlp)
     assert found
+    # Test 2 - positive
+    target_term_lemma = 'image printing device'
+    target_text = 'The information processing devices 10B receive the request, and then store the functional information related to the function 2 in the image printing device and validates display of the function 2.'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert found
+    # Test 3 - positive
+    target_term_lemma = 'polarization imaging device'
+    target_text = 'Fig. 49A is a drawing depicting a polarization imaging device in embodiment 10;'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert found
+    # Test 4 - positive
+    target_term_lemma = 'suppress'
+    target_text = 'Thus, in an online delivery system which uses an automatic driving vehicle, although the time and labor for the recipient increases, a delivery company driver is not required and therefore driver labor costs can be suppressed.'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert found
+    # Test 5 - positive
+    target_term_lemma = 'transmit'
+    target_text = 'report transmitting unit'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert found
+    # Test 6 - negative
+    target_term_lemma = 'color image device'
+    target_text = 'Therefore, many color imaging devices acquire information regarding R, G, and B using one image sensor.'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert not found
+    # Test 7 - negative
+    target_term_lemma = 'connect'
+    target_text = 'The magnetic connector system as claimed in claim 28, further including a first connector.'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert not found
+    # Test 8 - negative
+    target_term_lemma = 'number'
+    target_text = 'In one example, the setting temperatures Setting_temp[i] (1 ≤ i ≤ n) are decided using the aforementioned numerical expression (2) only for air conditioners'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert not found
+    # Test 9 - negative
+    target_term_lemma = 'digit'
+    target_text = 'By carrying out digital image processing for selecting and integrating pixels, color images can be generated with the images transmitted through the two regions 1202 being separated.'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert not found
+    # Test 10 - negative
+    target_term_lemma = 'transmit'
+    target_text = 'Fig. 5 is a drawing depicting transmittance as a wavelength characteristic of three types of filters according to an embodiment;'
+    found = term_checker.target_search(target_term_lemma, target_text, nlp)
+    assert not found
 
 
 def test_check_hyphenated():
-
     terminology = {'技術分野': ['Technical Field'],
                    '発明の概要': ['Summary'],
                    '特許請求の範囲': ['What is Claimed is:'],
@@ -289,7 +306,6 @@ def test_check_hyphenated():
                    '装置': ['device'],
                    '印刷装置': ['printing device'],
                    '撮影装置': ['photography device']}
-
     expected = [('技術分野',
                  'Technical-Field',
                  {'技術分野': ['Technical Field']},
@@ -314,15 +330,12 @@ def test_check_hyphenated():
                  'A printing-device.',
                  {'印刷装置': ['printing device']},
                  {'印刷装置': 'printing-device'})]
-
     raw_trans = term_checker.get_translation(TRANSLATION_FILE_2)
     checked_trans = term_checker.check_translation(terminology, raw_trans)
     rechecked_trans = term_checker.check_hyphenated(terminology, checked_trans)
-
     # Extract content from Segment objects for assertion comparison
     output = []
     for seg in rechecked_trans:
         output.append((seg.source_text, seg.target_text,
                        seg.missing_terms, seg.hyphenated_forms))
-
     assert output == expected

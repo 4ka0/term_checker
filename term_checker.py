@@ -275,7 +275,6 @@ def get_lemma(input_string, nlp):
 
     return lemma_form
 
-# NEXT, TEST THIS FUNCTION MORE THOROUGHLY
 
 def target_search(target_term_lemma, target_text, nlp):
     '''
