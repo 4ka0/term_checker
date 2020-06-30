@@ -191,7 +191,7 @@ def test_get_translation():
     assert output == expected
 
 
-def test_check_translation():
+def test_basic_check():
     terminology = {'技術分野': ['Technical Field'],
                    '発明の概要': ['Summary'],
                    '特許請求の範囲': ['What is Claimed is:', 'patent claims'],
@@ -224,13 +224,16 @@ def test_check_translation():
                  'Fig. 7 is a plan schematic depicting ...',
                  {'平面模式図': ['plan schematic view']})]
     translation = term_checker.get_translation(TRANSLATION_FILE_1)
-    nlp = term_checker.setup_tokenizer()
-    checked_trans = term_checker.check_translation(nlp, terminology, translation)
+    checked_trans, missing = term_checker.basic_check(terminology, translation)
     # Extract content from Segment objects for assertion comparison
     output = []
     for seg in checked_trans:
         output.append((seg.source_text, seg.target_text, seg.missing_terms))
     assert output == expected
+
+
+def test_lemma_check():
+    pass
 
 
 @pytest.mark.parametrize('user_input,expected', [
@@ -332,8 +335,8 @@ def test_check_hyphenated():
                  {'印刷装置': ['printing device']},
                  {'印刷装置': 'printing-device'})]
     raw_trans = term_checker.get_translation(TRANSLATION_FILE_2)
-    checked_trans = term_checker.check_translation(nlp, terminology, raw_trans)
-    rechecked_trans = term_checker.check_hyphenated(terminology, checked_trans)
+    checked_trans, missing = term_checker.basic_check(terminology, raw_trans)
+    rechecked_trans = term_checker.hyphen_check(terminology, checked_trans)
     # Extract content from Segment objects for assertion comparison
     output = []
     for seg in rechecked_trans:

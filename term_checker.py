@@ -185,8 +185,16 @@ def group_terminology(terminology):
 
     return grouped_terminology
 
-'''
-def check_translation(terminology, translation):
+
+def basic_check(terminology, translation):
+    '''
+    Function for running a basic check to see whether the target text in a
+    translation segment contains correct terminology. A basic check here means
+    simply using "in" to see whether correct terminology is included in the
+    target text.
+    '''
+
+    missing = False
 
     for segment in translation:
 
@@ -207,9 +215,9 @@ def check_translation(terminology, translation):
 
                     if not found:
                         segment.missing_terms[entry] = terminology[entry]
+                        missing = True
 
-    return translation
-'''
+    return translation, missing
 
 
 def setup_tokenizer():
@@ -230,50 +238,50 @@ def setup_tokenizer():
     infixes = [x for x in infixes if '-|–|—|--|---|——|~' not in x]
     infix_re = compile_infix_regex(infixes)
 
-    nlp.tokenizer =  Tokenizer(nlp.vocab, prefix_search=nlp.tokenizer.prefix_search,
-                                suffix_search=nlp.tokenizer.suffix_search,
-                                infix_finditer=infix_re.finditer,
-                                token_match=nlp.tokenizer.token_match,
-                                rules=nlp.Defaults.tokenizer_exceptions)
+    nlp.tokenizer =  Tokenizer(nlp.vocab,
+                               prefix_search=nlp.tokenizer.prefix_search,
+                               suffix_search=nlp.tokenizer.suffix_search,
+                               infix_finditer=infix_re.finditer,
+                               token_match=nlp.tokenizer.token_match,
+                               rules=nlp.Defaults.tokenizer_exceptions)
 
-    # nlp.tokenizer = custom_tokenizer(nlp)
     return nlp
 
 
-def check_translation(nlp, terminology, translation):
+def lemma_check(nlp, terminology, translation):
     '''
     Function for checking whether the target text in a translation segment
-    contains a correct target term if a source term is found in the source
-    text for that segment.
+    contains a correct target term in it's lemma form.
     '''
-
-    # Load English model (small version with unnecessary parts disabled)
-    # nlp = spacy.load('en_core_web_sm', disable = ['tagger', 'parser', 'ner'])
 
     for segment in translation:
 
-        # Only proceed if there is actual source and target text.
-        if contains_content(segment):
+        # Only proceed if missing terminology has been found
+        if segment.missing_terms:
 
-            # Check if any source terminology is in the source text.
-            for source_term in terminology:
+            # List of entries to remove from missing_terms if found
+            to_remove = []
 
-                if source_term in segment.source_text:
+            # Only look at terminolgy registered as missing
+            for source_term in segment.missing_terms:
 
-                    # Get lemma version of each corresponding target term and
-                    # see if included in target text
-                    for target_term in terminology[source_term]:
+                for target_term in segment.missing_terms[source_term]:
 
-                        # Get the lemma form of the target term
-                        target_term_lemma = get_lemma(target_term, nlp)
+                    # Get the lemma form of the target term
+                    target_term_lemma = get_lemma(target_term, nlp)
 
-                        # Check if target_term_lemma appears in target text
-                        found = target_search(target_term_lemma,
-                                              segment.target_text,
-                                              nlp)
+                    # Check if target_term_lemma appears in target text
+                    found = target_search(target_term_lemma,
+                                          segment.target_text,
+                                          nlp)
 
-                        if not found:
-                            segment.missing_terms[source_term] = terminology[source_term]
+                    if found:
+                        to_remove.append(source_term)
+
+            # Remove found terms from the missing terms dict
+            if to_remove:
+                for entry in to_remove:
+                    del segment.missing_terms[entry]
 
     return translation
 
@@ -348,7 +356,7 @@ def contains_content(segment):
     return False
 
 
-def check_hyphenated(terminology, translation):
+def hyphen_check(terminology, translation):
     '''
     Function to check if hyphenated forms of missing terms appear in the
     target text. If the hyphenated form is found in the target text, this
@@ -419,7 +427,7 @@ def main():
     user_input = sys.argv
     if user_input_check(user_input):
 
-        # Obtain translatio
+        # Obtain translation
         translation = get_translation(user_input[1])
 
         # Obtain and organize terminology
@@ -429,10 +437,14 @@ def main():
         terminology = remove_duplicates(terminology)
         terminology = group_terminology(terminology)
 
-        # Check translation
-        nlp = setup_tokenizer()
-        translation = check_translation(nlp, terminology, translation)
-        translation = check_hyphenated(terminology, translation)
+        # Run basic check
+        translation, missing = basic_check(terminology, translation)
+
+        # Run more advanced checks if necessary
+        if missing:
+            nlp = setup_tokenizer()
+            translation = lemma_check(nlp, terminology, translation)
+            translation = hyphen_check(terminology, translation)
 
         # Display results
         output_results(translation)
