@@ -1,6 +1,6 @@
 # Term checker
 
-A command line script to check whether correct terminology is being used in a translation, regardless of the inflected form of the terminology, i.e. regardless of whether terminology appears in singular or plural form in the case of nouns or present or past tense and so forth in the case of verbs.
+A command line script to check whether correct terminology is being used in a translation regardless of the inflected form of the terminology, i.e. regardless of whether terminology appears in singular or plural form in the case of nouns or present or past tense and so forth in the case of verbs.
 
 The translation is assumed to be a tmx file.
 
