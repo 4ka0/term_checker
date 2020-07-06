@@ -14,10 +14,6 @@ source_term <tab> target_term_2
 source_term <tab> target_term_3
 ```
 
-### Installation
-
-Download **term_checker.py** from here and place in any directory of your choosing.
-
 ### Running the script
 
 From the directory containing this script, terminal:
