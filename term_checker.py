@@ -7,13 +7,13 @@ in a translation (tmx file).
 
 Terminology is assumed to be listed in a tab-delimited file (txt file)
 with the following format:
-    source_term <tab> target_term
+    source_term<tab>target_term
 
 If multiple target terms exist for a given source term, it is assumed that
 these are entered on separate lines rather than all on the same line, e.g.:
-    source_term <tab> target_term_1
-    source_term <tab> target_term_2
-    source_term <tab> target_term_3
+    source_term<tab>target_term_1
+    source_term<tab>target_term_2
+    source_term<tab>target_term_3
 
 To execute:
     python3 term_checker.py translation.tmx glossary.txt
@@ -47,7 +47,7 @@ class Segment():
 
 def user_input_check(user_input):
     '''
-    Function for validating user input entered at the command line.
+    Function to validate user input entered at the command line.
     Expected input:
         python3 terminology_check.py translation.tmx glossary.txt
     Aspects checked:
@@ -58,7 +58,7 @@ def user_input_check(user_input):
     '''
     input_verified = True
 
-    # Check if 3 arguments have been input.
+    # Check if 3 arguments have been input
     if len(user_input) != 3:
         input_verified = False
 
@@ -66,11 +66,11 @@ def user_input_check(user_input):
         translation_file = user_input[1]
         glossary_file = user_input[2]
 
-        # Check if 2nd argument is a tmx file.
+        # Check if 2nd argument is a tmx file
         if not translation_file.lower().endswith('.tmx'):
             input_verified = False
 
-        # Check if 3rd argument is a txt file.
+        # Check if 3rd argument is a txt file
         if not glossary_file.lower().endswith('.txt'):
             input_verified = False
 
@@ -85,7 +85,7 @@ def user_input_check(user_input):
 
 def get_translation(translation_file):
     '''
-    Function for extracting translation from a user-specified tmx file.
+    Function to extract translation from a user-specified tmx file.
     '''
     try:
         with open(translation_file, 'rb') as file:
@@ -107,7 +107,7 @@ def get_translation(translation_file):
 
 def get_terminology(glossary_file):
     '''
-    Function for reading in terminology from user-specified txt file.
+    Function to read in terminology from a user-specified txt file.
     '''
     try:
         with open(glossary_file) as f:
@@ -123,8 +123,8 @@ def clean_lines(terminology):
     '''
     Function to clean entries in a terminology list, specifically:
     (1) Removes surrounding whitespace chars from each line (including '\n')
-    (2) Removes '*' chars from the start of each line (I have these in some of
-        my client glossaries).
+    (2) Removes '*' chars from the start of each line
+        (I have these in some of my client glossaries).
     '''
     terminology = [line.strip() for line in terminology]
     terminology = [line.lstrip('*') for line in terminology]
@@ -172,7 +172,7 @@ def group_terminology(terminology):
         source_term = split_terms[0]
         target_term = split_terms[1]
 
-        # If source term already appears as a key.
+        # If source term already appears as a key
         if source_term in grouped_terminology:
             target_terms = grouped_terminology[source_term]
             target_terms.append(target_term)
@@ -180,7 +180,7 @@ def group_terminology(terminology):
 
         else:
             # Add new entry with the source term as the key and
-            # a list containing the single target term as the value.
+            # a list containing the single target term as the value
             grouped_terminology[source_term] = [target_term]
 
     return grouped_terminology
@@ -198,10 +198,10 @@ def basic_check(terminology, translation):
 
     for segment in translation:
 
-        # Only proceed if there is actual source and target text.
+        # Only proceed if there is actual source and target text
         if contains_content(segment):
 
-            # Check if any source terminology is in the source text.
+            # Check if any source terminology is in the source text
             for entry in terminology:
                 if entry in segment.source_text:
 
@@ -210,7 +210,7 @@ def basic_check(terminology, translation):
                     terms = [x.lower() for x in terminology[entry]]
 
                     # Check if any of the corresponding target terms
-                    # appear in the target text.
+                    # appear in the target text
                     found = any(elem in text for elem in terms)
 
                     if not found:
@@ -225,25 +225,31 @@ def setup_tokenizer():
     Function to set up a tokenizer with specific rules to not split words or
     numbers that include hyphens.
     '''
+
     nlp = spacy.load('en_core_web_sm')
+
     # Default infixes
     inf = list(nlp.Defaults.infixes)
-    # Remove the generic op between numbers or between a number and a -
+
+    # Remove the generic op between numbers or between a number and a hyphen
     inf.remove(r"(?<=[0-9])[+\-\*^](?=[0-9-])")
+
     # Convert inf to tuple
     inf = tuple(inf)
+
     # Add the removed rule after subtracting (?<=[0-9])-(?=[0-9]) pattern
     infixes = inf + tuple([r"(?<=[0-9])[+*^](?=[0-9-])", r"(?<=[0-9])-(?=-)"])
-    # Remove - between letters rule
+
+    # Remove hyphen between letters rule
     infixes = [x for x in infixes if '-|–|—|--|---|——|~' not in x]
     infix_re = compile_infix_regex(infixes)
 
-    nlp.tokenizer =  Tokenizer(nlp.vocab,
-                               prefix_search=nlp.tokenizer.prefix_search,
-                               suffix_search=nlp.tokenizer.suffix_search,
-                               infix_finditer=infix_re.finditer,
-                               token_match=nlp.tokenizer.token_match,
-                               rules=nlp.Defaults.tokenizer_exceptions)
+    nlp.tokenizer = Tokenizer(nlp.vocab,
+                               prefix_search = nlp.tokenizer.prefix_search,
+                               suffix_search = nlp.tokenizer.suffix_search,
+                               infix_finditer = infix_re.finditer,
+                               token_match = nlp.tokenizer.token_match,
+                               rules = nlp.Defaults.tokenizer_exceptions)
 
     return nlp
 
@@ -251,7 +257,7 @@ def setup_tokenizer():
 def lemma_check(nlp, terminology, translation):
     '''
     Function for checking whether the target text in a translation segment
-    contains a correct target term in it's lemma form.
+    contains a correct target term in its lemma form.
     '''
 
     for segment in translation:
@@ -264,7 +270,6 @@ def lemma_check(nlp, terminology, translation):
 
             # Only look at terminolgy registered as missing
             for source_term in segment.missing_terms:
-
                 for target_term in segment.missing_terms[source_term]:
 
                     # Get the lemma form of the target term
@@ -292,7 +297,7 @@ def get_lemma(input_string, nlp):
     A lemma version being:
        - for a single-word string, the lemma of that single word
        - for a multi-word string, the same string except that the end word
-            is in its lemma form
+            is replaced with its lemma form
     '''
 
     # Get end word lemma, regardless of the number of words
@@ -300,9 +305,8 @@ def get_lemma(input_string, nlp):
     doc = nlp(input_string)
     end_word_lemma = doc[-1].lemma_
 
-    # If the input string contains more than one word, rebuild the input string
-    # with the end word being replaced with its lemma form
-    # subword_no = len(subwords)
+    # If the input string contains more than one word, rebuild the input
+    # string with the end word being replaced with its lemma form
     if len(subwords) > 1:
         split_words = input_string.rsplit(' ', 1)
         lemma_form = split_words[0] + ' ' + end_word_lemma
@@ -366,9 +370,11 @@ def hyphen_check(terminology, translation):
         if segment.missing_terms:
             for source_term in segment.missing_terms:
                 for target_term in segment.missing_terms[source_term]:
+
                     # If the target_term consists of 2 or more words
                     if len(target_term.split()) > 1:
                         hyphenated = target_term.replace(' ', '-')
+
                         # If the hyphenated form appears in the target text
                         if hyphenated in segment.target_text:
                             segment.hyphenated_forms[source_term] = hyphenated
@@ -378,7 +384,7 @@ def hyphen_check(terminology, translation):
 
 def output_results(translation):
     '''
-    Function for outputting results to the terminal.
+    Function to output results to the terminal.
     '''
     errors_found = False
 
@@ -391,19 +397,19 @@ def output_results(translation):
                 print(Fore.RED + '\n\'' + source_term +
                       '\' should be translated as', end=' ')
 
-                # Get the number of target terms.
+                # Get the number of target terms
                 target_num = len(segment.missing_terms[source_term])
                 counter = 0
 
                 for target_term in segment.missing_terms[source_term]:
                     counter += 1
-                    # Second to last element.
+                    # Second to last element
                     if counter == target_num - 1:
                         print('\'' + target_term + '\'', end=', or ')
-                    # Last element.
+                    # Last element
                     elif counter == target_num:
                         print('\'' + target_term + '\'', end=' ')
-                    # Any other element.
+                    # Any other element
                     else:
                         print('\'' + target_term + '\'', end=', ')
 
@@ -443,8 +449,8 @@ def main():
         # Run more advanced checks if necessary
         if missing:
             nlp = setup_tokenizer()
-            translation = lemma_check(nlp, terminology, translation)
             translation = hyphen_check(terminology, translation)
+            translation = lemma_check(nlp, terminology, translation)
 
         # Display results
         output_results(translation)
