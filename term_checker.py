@@ -150,10 +150,16 @@ def remove_duplicates(terminology):
     '''
     Function to remove duplicate entries.
     '''
+
+    '''
     unique_terminology = []
     for entry in terminology:
         if entry not in unique_terminology:
             unique_terminology.append(entry)
+    '''
+    
+    unique_terminology = list(dict.fromkeys(terminology))
+
     return unique_terminology
 
 
