@@ -26,6 +26,8 @@ python3 term_checker.py translation.tmx glossary.txt
 ### Prerequisites
 
 * Python 3
+* [Spacy](https://spacy.io/usage)
+* [Spacy en_core_web_sm](https://spacy.io/models/en) (trained model for English)
 * [colorama 0.4.3](https://pypi.org/project/colorama/) (to make output easier to read)
 * [translate-toolkit 2.5.0](https://pypi.org/project/translate-toolkit/) (for handling tmx files)
 * [pytest 5.4.1](https://docs.pytest.org/en/latest/getting-started.html) (for running the tests)
