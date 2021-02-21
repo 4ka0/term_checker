@@ -38,6 +38,12 @@ python3 term_checker.py translation.tmx glossary.txt
 * Visual Studio Code 1.44.2
 * macOS 10.14.6
 
+### Example output:
+
+(Please excuse the blurring but the translation text here is confidential.)
+
+<img src="screenshot.png" width="650"></br>
+
 ### License
 
 Licensed under the MIT License.
