@@ -42,18 +42,14 @@ python3 term-checker.py translation.tmx glossary.txt
 
 If the script finds any errors in your translation, these will be displayed in the terminal for you to inspect.
 
-### Prerequisites
+### Built using:
 
-* Python 3
+* Python 3.7.6
 * [Spacy](https://spacy.io/usage)
 * [Spacy en_core_web_sm](https://spacy.io/models/en) (light-weight model for English)
 * [colorama 0.4.3](https://pypi.org/project/colorama/) (to make output easier to read)
 * [translate-toolkit 2.5.0](https://pypi.org/project/translate-toolkit/) (for handling tmx files)
 * [pytest 5.4.1](https://docs.pytest.org/en/latest/getting-started.html) (for running the tests)
-
-### Built using:
-
-* Python 3.7.6
 * Visual Studio Code 1.44.2
 * macOS 10.14.6
 
