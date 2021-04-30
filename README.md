@@ -7,24 +7,25 @@ For example, let’s say we have a source text that contains the Japanese word �
 ### Assumptions
 
 It is assumed that the translation is a “.tmx” file and the terminology is listed in a “.txt” file in which a source term and a target term are separated by a tab character as in the example below.
-
+```
 source term<tab>target term
-(here “<tab>” represents a tab character)
+```
+(here “\<tab\>” represents a tab character)
 
 For example, in the case of a Japanese-to-English translation:
-
+```
 情報処理装置<tab>information processing device
-
+```
 If multiple target terms exist for a single source term, please enter these on separate lines as in the example below.
-
+```
 source term<tab>target term 1
 source term<tab>target term 2
-
+```
 Again, in the case of a Japanese-to-English translation:
-
+```
 情報処理装置<tab>information processing device
 情報処理装置<tab>information processing apparatus
-
+```
 ### Running the script
 
 To run the script on macOS, carry out the following steps.
