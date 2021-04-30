@@ -33,7 +33,7 @@ To run the script on macOS, carry out the following steps.
 1. Download the script to a location of your choice on your computer.
 2. Open the Finder app and navigate to the folder that contains the script.
 3. Use the mouse to right-click on this folder.
-4. Select Services > New Terminal at Folder. This will open the Terminal app.
+4. Select **Services > New Terminal at Folder**. This will open the Terminal app.
 5. In the Terminal app, enter the following command making sure to replace “translation.tmx” with the name of your translation file and “glossary.txt” with the name of your glossary file.
 
 ```
