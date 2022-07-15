@@ -157,7 +157,7 @@ def remove_duplicates(terminology):
         if entry not in unique_terminology:
             unique_terminology.append(entry)
     '''
-    
+
     unique_terminology = list(dict.fromkeys(terminology))
 
     return unique_terminology
@@ -251,11 +251,11 @@ def setup_tokenizer():
     infix_re = compile_infix_regex(infixes)
 
     nlp.tokenizer = Tokenizer(nlp.vocab,
-                               prefix_search = nlp.tokenizer.prefix_search,
-                               suffix_search = nlp.tokenizer.suffix_search,
-                               infix_finditer = infix_re.finditer,
-                               token_match = nlp.tokenizer.token_match,
-                               rules = nlp.Defaults.tokenizer_exceptions)
+                              prefix_search=nlp.tokenizer.prefix_search,
+                              suffix_search=nlp.tokenizer.suffix_search,
+                              infix_finditer=infix_re.finditer,
+                              token_match=nlp.tokenizer.token_match,
+                              rules=nlp.Defaults.tokenizer_exceptions)
 
     return nlp
 
@@ -292,7 +292,8 @@ def lemma_check(nlp, terminology, translation):
             # Remove found terms from the missing terms dict
             if to_remove:
                 for entry in to_remove:
-                    del segment.missing_terms[entry]
+                    if entry in segment.missing_terms:
+                        del segment.missing_terms[entry]
 
     return translation
 
@@ -420,6 +421,7 @@ def output_results(translation):
                         print('\'' + target_term + '\'', end=', ')
 
                 # Print hyphenated form if present
+
                 if segment.hyphenated_forms:
                     print(Fore.RED + '(although \'' +
                           segment.hyphenated_forms[source_term] +
@@ -430,7 +432,7 @@ def output_results(translation):
             print(Fore.CYAN + 'Target text:')
             print(Fore.RESET + segment.target_text)
 
-    if errors_found == False:
+    if errors_found is False:
         print(Fore.CYAN + '\nNo terminology errors found.\n')
 
 

@@ -6,3 +6,10 @@
 ..env/
 __pycache__/
 .pytest_cache/
+.venv/
+glossary_1.txt
+glossary_2.txt
+translation_1.txt
+translation_2.txt
+honyaku-draft.tmx
+glossary-check.tmx
