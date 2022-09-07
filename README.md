@@ -49,8 +49,4 @@ If the script finds any errors in your translation, these will be displayed in t
 
 (Please excuse the blurring but the translation text here is confidential.)
 
-<img src="screenshot.png" width="650"></br>
-
-### License
-
-Licensed under the MIT License.
+<img src="screenshot.png" width="650">
